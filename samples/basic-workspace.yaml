@@ -8,5 +8,5 @@ spec:
     databaseReplicas: 1
     agentPools:
       - name: default
-        replicas: 3
+        replicas: 1
     
