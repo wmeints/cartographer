@@ -1,0 +1,12 @@
+apiVersion: mlops.aigency.com/v1alpha1
+kind: Workspace
+metadata:
+  name: test-environment
+spec:
+  workflows:
+    controllerReplicas: 1
+    databaseReplicas: 1
+    agentPools:
+      - name: default
+        replicas: 3
+    
