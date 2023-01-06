@@ -38,7 +38,7 @@ public class V1Alpha1Workspace : CustomKubernetesEntity<V1Alpha1Workspace.Enviro
         /// </summary>
         [Items(MinItems = 1, MaxItems = -1)]
         [Description("The pools to create for the workflow environment")]
-        public Collection<AgentPoolSpec> AgentPools { get; set; }
+        public Collection<AgentPoolSpec> AgentPools { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the number of controllers to deploy.
