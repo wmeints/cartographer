@@ -9,7 +9,7 @@ to automate as much of the operations work as possible for our environments.
 
 ------------------------------------------------------------------------------------------------------------------------
 
-**Note** This is an experiment. Feel free to give it a try on your own Kubernetes environment. 
+**Note:** This is an experiment. Feel free to give it a try on your own Kubernetes environment. 
 Currently, only the workflow bits work.
 
 ------------------------------------------------------------------------------------------------------------------------
