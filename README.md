@@ -37,8 +37,8 @@ After forwarding the port, you can access the orion server on `http://localhost:
 
 ## Getting Started
 
-You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run against a remote cluster.
-**Note:** Your controller will automatically use the current context in your kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
+You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster
+for testing, or run against a remote cluster. 
 
 ### Installing the operator
 
@@ -75,5 +75,19 @@ to the prefect server in the workspace:
 kubectl port-forward svc/test-environment-orion-server 4200:4200
 ```
 
+### Running from source
+
+To start the operator locally from source, you'll need the .NET 6 SDK in your machine.
+Run the following command to install the custom resource definitions and run the operator:
+
+```
+dotnet run -- install
+dotnet run --project ./src/Cartographer\Cartographer.csproj
+```
+
+**Note:** Your controller will automatically use the current context in your kubeconfig file 
+(i.e. whatever cluster `kubectl cluster-info` shows). 
+
 ## Documentation
+
 TODO: Describe how the operator works internally
