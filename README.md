@@ -1,10 +1,18 @@
 # Cartographer
 
 This project implements a custom operator for Kubernetes that manages the MLOps environments for Aigency.
-We've started this project, because we're with a small number of people working on various projects for various customers.
+We've started this project, because we're with a small number of people working on various projects for
+various customers.
 
 We want to spend our time building and deploying models. The rest of our stuff should just work. Therefore we're trying
 to automate as much of the operations work as possible for our environments.
+
+------------------------------------------------------------------------------------------------------------------------
+
+**Note** This is an experiment. Feel free to give it a try on your own Kubernetes environment. 
+Currently, only the workflow bits work.
+
+------------------------------------------------------------------------------------------------------------------------
 
 ## Description
 
