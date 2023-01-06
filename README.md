@@ -1,16 +1,16 @@
 # Cartographer
 
-This project implements a custom operator for Kubernetes that manages the MLOps environments for Aigency.
-We've started this project, because we're with a small number of people working on various projects for
-various customers.
+This project implements a custom operator for Kubernetes that manages the MLOps environments.
+I've started this project because I don't want to deal with Helm and I need something that also manages my
+environment after I've deployed it on Kubernetes.
 
-We want to spend our time building and deploying models. The rest of our stuff should just work. Therefore we're trying
-to automate as much of the operations work as possible for our environments.
+I want to spend my time building and deploying models. The rest of my stuff should just work. Therefore I'm trying
+to automate as much of the operations work as possible for the environments I work in.
 
 ------------------------------------------------------------------------------------------------------------------------
 
-**Note:** This is an experiment. Feel free to give it a try on your own Kubernetes environment. 
-Currently, only the workflow bits work.
+**Note:** This is an experiment to see if my idea is viable. Feel free to give it a try on your own Kubernetes environment. 
+Currently, only the workflow bits work. You've been warned :grin:
 
 ------------------------------------------------------------------------------------------------------------------------
 
