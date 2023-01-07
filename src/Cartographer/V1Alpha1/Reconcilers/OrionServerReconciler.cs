@@ -105,6 +105,19 @@ public class OrionServerReconciler
                                     {
                                         new V1ContainerPort(containerPort: 4200, name: "http-orion")
                                     },
+                                    Resources = new V1ResourceRequirements
+                                    {
+                                        Requests = new Dictionary<string, ResourceQuantity>
+                                        {
+                                            ["cpu"] = new ResourceQuantity("200m"),
+                                            ["memory"] = new ResourceQuantity("512Mi")
+                                        },
+                                        Limits = new Dictionary<string, ResourceQuantity>
+                                        {
+                                            ["cpu"] = new ResourceQuantity("500m"),
+                                            ["memory"] = new ResourceQuantity("1Gi")
+                                        }
+                                    }
                                 }
                             }
                         }
