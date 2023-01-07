@@ -8,13 +8,16 @@ using ThorstenHans.JsonPatch.Contrib;
 
 namespace Cartographer.V1Alpha1.Reconcilers;
 
+/// <summary>
+/// Reconciles the state of the prefect agent pools
+/// </summary>
 public class PrefectAgentReconciler
 {
     private readonly IKubernetes _kubernetes;
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="OrionDatabaseReconciler"/>
+    /// Initializes a new instance of <see cref="PrefectAgentReconciler"/>
     /// </summary>
     /// <param name="kubernetes">Kubernetes client to use</param>
     /// <param name="logger">Logger to write log message to</param>

@@ -12,7 +12,7 @@ public class OrionServerReconciler
     private ILogger _logger;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="OrionDatabaseReconciler"/>
+    /// Initializes a new instance of <see cref="OrionServerReconciler"/>
     /// </summary>
     /// <param name="kubernetes">Kubernetes client to use</param>
     /// <param name="logger">Logger to write log message to</param>
