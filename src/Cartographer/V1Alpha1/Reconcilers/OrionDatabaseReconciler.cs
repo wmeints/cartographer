@@ -156,6 +156,19 @@ public class OrionDatabaseReconciler
                                     {
                                         new V1VolumeMount(mountPath: "/var/data/postgresql", name: "data")
                                     },
+                                    Resources = new V1ResourceRequirements
+                                    {
+                                        Requests = new Dictionary<string, ResourceQuantity>
+                                        {
+                                            ["cpu"] = new ResourceQuantity("500m"),
+                                            ["memory"] = new ResourceQuantity("512Mi")
+                                        },
+                                        Limits = new Dictionary<string, ResourceQuantity>
+                                        {
+                                            ["cpu"] = new ResourceQuantity("1"),
+                                            ["memory"] = new ResourceQuantity("1Gi")
+                                        },
+                                    }
                                 }
                             },
                             Volumes = new Collection<V1Volume>
