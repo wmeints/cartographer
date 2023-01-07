@@ -152,6 +152,11 @@ public class PrefectAgentReconciler
                                 {
                                     new V1EnvVar(name: "PREFECT_API_URL",
                                         value: $"http://{entity.Name()}-orion-server:4200/api")
+                                },
+                                Resources = new V1ResourceRequirements
+                                {
+                                    Requests = agentPoolSpec.ResourceRequests,
+                                    Limits = agentPoolSpec.ResourceLimits
                                 }
                             }
                         }

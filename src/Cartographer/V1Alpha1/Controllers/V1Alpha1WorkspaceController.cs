@@ -9,6 +9,7 @@ using KubeOps.Operator.Rbac;
 namespace Cartographer.V1Alpha1.Controllers;
 
 [EntityRbac(typeof(V1Alpha1Workspace), Verbs = RbacVerb.All)]
+[EntityRbac(typeof(V1StatefulSet), Verbs = RbacVerb.All)]
 [EntityRbac(typeof(V1Deployment), Verbs = RbacVerb.All)]
 [EntityRbac(typeof(V1Service), Verbs = RbacVerb.All)]
 [EntityRbac(typeof(V1Secret), Verbs = RbacVerb.All)]
