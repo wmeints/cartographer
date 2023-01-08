@@ -50,7 +50,8 @@ public class EnvironmentSecretsReconciler
                 StringData = new Dictionary<string, string>
                 {
                     ["orionDatabasePassword"] = databasePassword,
-                    ["orionDatabaseConnectionUrl"] = $"postgresql+asyncpg://postgres:{databasePassword}@{entity.Name()}-orion-database:5432/orion" 
+                    ["orionDatabaseConnectionUrl"] = $"postgresql+asyncpg://postgres:{databasePassword}@{entity.Name()}-orion-database:5432/orion",
+                    ["mlflowDatabaseConnectionUrl"] = $"postgresql://postgres:{databasePassword}@{entity.Name()}-orion-database:5432/mlflow"
                 }
             };
 
