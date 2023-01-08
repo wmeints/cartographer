@@ -153,7 +153,9 @@ public class PrefectAgentReconciler
                                 Env = new Collection<V1EnvVar>
                                 {
                                     new V1EnvVar(name: "PREFECT_API_URL",
-                                        value: $"http://{entity.Name()}-orion-server:4200/api")
+                                        value: $"http://{entity.Name()}-orion-server:4200/api"),
+                                    new V1EnvVar(name: "MLFLOW_TRACKING_URI ",
+                                        value: $"http://{entity.Name()}-mlflow-server:5000")
                                 },
                                 Resources = new V1ResourceRequirements
                                 {
