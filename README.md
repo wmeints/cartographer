@@ -40,6 +40,11 @@ After forwarding the port, you can access the orion server on `http://localhost:
 You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster
 for testing, or run against a remote cluster. 
 
+### System requirements
+
+Cartographer relies on CrunchyData's Postgres operator to manage the database for the workspaces.
+Please refer to the manual to install [the Postgres operator](https://access.crunchydata.com/documentation/postgres-operator/5.3.0/quickstart/).
+
 ### Installing the operator
 
 Unpack the release zip into a dedicated folder and verify the settings in `install/kustomization.yaml`. 

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Cartographer.Common;
 using Cartographer.V1Alpha1.Entities;
 using k8s;
 using k8s.Models;
@@ -13,7 +14,7 @@ public class MlFlowReconciler
 {
     private readonly IKubernetes _kubernetes;
     private readonly ILogger _logger;
-    
+
     /// <summary>
     /// Initializes a new instance of <see cref="MlFlowReconciler"/>
     /// </summary>
@@ -31,55 +32,8 @@ public class MlFlowReconciler
     /// <param name="entity"></param>
     public async Task ReconcileAsync(V1Alpha1Workspace entity)
     {
-        await ReconcileMlFlowPersistentVolumeClaimAsync(entity);
         await ReconcileMlFlowServerDeploymentAsync(entity);
         await ReconcileMlFlowServerServiceAsync(entity);
-    }
-
-    private async Task ReconcileMlFlowPersistentVolumeClaimAsync(V1Alpha1Workspace entity)
-    {
-        var persistentVolumeClaimLabels = new Dictionary<string, string>
-        {
-            ["mlops.aigency.com/environment"] = entity.Name(),
-            ["mlops.aigency.com/component"] = "mlflow-server"
-        };
-
-        var existingPersistentVolumeClaims = await _kubernetes.ListNamespacedPersistentVolumeClaimAsync(
-            entity.Namespace(), labelSelector: persistentVolumeClaimLabels.AsLabelSelector());
-
-        if (existingPersistentVolumeClaims.Items.Count == 0)
-        {
-            _logger.LogInformation(
-                "Existing mlflow PVC not found for {EnvironmentName}. Creating a new PVC for mlflow",
-                entity.Name());
-
-            var persistentVolumeClaim = new V1PersistentVolumeClaim
-            {
-                Metadata = new V1ObjectMeta
-                {
-                    Name = $"{entity.Name()}-mlflow-server-pvc",
-                    Labels = persistentVolumeClaimLabels
-                },
-                Spec = new V1PersistentVolumeClaimSpec
-                {
-                    Resources = new V1ResourceRequirements
-                    {
-                        Requests = new Dictionary<string, ResourceQuantity>
-                        {
-                            ["storage"] = entity.Spec.Workflows.StorageQuota,
-                        }
-                    },
-                    StorageClassName = "standard",
-                    AccessModes = new Collection<string>
-                    {
-                        "ReadWriteOnce"
-                    }
-                }
-            };
-
-            await _kubernetes.CreateNamespacedPersistentVolumeClaimAsync(
-                persistentVolumeClaim.WithOwnerReference(entity), entity.Namespace());
-        }
     }
 
     private async Task ReconcileMlFlowServerDeploymentAsync(V1Alpha1Workspace entity)
@@ -90,14 +44,14 @@ public class MlFlowReconciler
             ["mlops.aigency.com/component"] = "mlflow-server"
         };
 
+        var deploymentName = $"{entity.Name()}-mlflow-server";
+
         var existingDeployments = await _kubernetes.ListNamespacedDeploymentAsync(
             entity.Namespace(), labelSelector: deploymentLabels.AsLabelSelector());
 
         if (existingDeployments.Items.Count == 0)
         {
-            _logger.LogInformation(
-                "Existing mlflow deployment not found for {EnvironmentName}. Creating a new mlflow deployment",
-                entity.Name());
+            _logger.CreatingDeployment(deploymentName, entity.Name(), entity.Namespace());
 
             var deploymentImageName = entity.Spec.ExperimentTracking.Image;
 
@@ -105,12 +59,12 @@ public class MlFlowReconciler
             {
                 deploymentImageName = "willemmeints/mlflow:2.1.1";
             }
-            
+
             var deployment = new V1Deployment
             {
                 Metadata = new V1ObjectMeta
                 {
-                    Name = $"{entity.Name()}-mlflow-server",
+                    Name = deploymentName,
                     Labels = deploymentLabels
                 },
                 Spec = new V1DeploymentSpec
@@ -139,13 +93,61 @@ public class MlFlowReconciler
                                     {
                                         new V1EnvVar
                                         {
-                                            Name = "MLFLOW_BACKEND_STORE",
+                                            Name = "DB_NAME",
                                             ValueFrom = new V1EnvVarSource
                                             {
                                                 SecretKeyRef = new V1SecretKeySelector
                                                 {
-                                                    Key = "mlflowDatabaseConnectionUrl",
-                                                    Name = $"{entity.Name()}-environment-secrets"
+                                                    Name = $"{entity.Name()}-db-pguser-mlflow",
+                                                    Key = "dbname"
+                                                }
+                                            }
+                                        },
+                                        new V1EnvVar
+                                        {
+                                            Name = "DB_PORT",
+                                            ValueFrom = new V1EnvVarSource
+                                            {
+                                                SecretKeyRef = new V1SecretKeySelector
+                                                {
+                                                    Name = $"{entity.Name()}-db-pguser-mlflow",
+                                                    Key = "port"
+                                                }
+                                            }
+                                        },
+                                        new V1EnvVar
+                                        {
+                                            Name = "DB_HOST",
+                                            ValueFrom = new V1EnvVarSource
+                                            {
+                                                SecretKeyRef = new V1SecretKeySelector
+                                                {
+                                                    Name = $"{entity.Name()}-db-pguser-mlflow",
+                                                    Key = "host"
+                                                }
+                                            }
+                                        },
+                                        new V1EnvVar
+                                        {
+                                            Name = "DB_USER",
+                                            ValueFrom = new V1EnvVarSource
+                                            {
+                                                SecretKeyRef = new V1SecretKeySelector
+                                                {
+                                                    Name = $"{entity.Name()}-db-pguser-mlflow",
+                                                    Key = "user"
+                                                }
+                                            }
+                                        },
+                                        new V1EnvVar
+                                        {
+                                            Name = "DB_PASS",
+                                            ValueFrom = new V1EnvVarSource
+                                            {
+                                                SecretKeyRef = new V1SecretKeySelector
+                                                {
+                                                    Name = $"{entity.Name()}-db-pguser-mlflow",
+                                                    Key = "password"
                                                 }
                                             }
                                         }
@@ -153,10 +155,6 @@ public class MlFlowReconciler
                                     Ports = new Collection<V1ContainerPort>
                                     {
                                         new V1ContainerPort(containerPort: 5000, name: "http-mlflow")
-                                    },
-                                    VolumeMounts = new Collection<V1VolumeMount>
-                                    {
-                                        new V1VolumeMount(mountPath: "/var/data/mlflow", name: "data")
                                     },
                                     Resources = new V1ResourceRequirements
                                     {
@@ -172,28 +170,18 @@ public class MlFlowReconciler
                                         },
                                     }
                                 }
-                            },
-                            Volumes = new Collection<V1Volume>
-                            {
-                                new V1Volume
-                                {
-                                    Name = "data",
-                                    PersistentVolumeClaim =
-                                        new V1PersistentVolumeClaimVolumeSource(
-                                            claimName: $"{entity.Name()}-mlflow-server-pvc")
-                                }
                             }
                         }
                     }
                 }
             };
-            
+
             await _kubernetes.CreateNamespacedDeploymentAsync(
                 deployment.WithOwnerReference(entity),
                 entity.Namespace());
         }
     }
-    
+
     private async Task ReconcileMlFlowServerServiceAsync(V1Alpha1Workspace entity)
     {
         var serviceLabels = new Dictionary<string, string>
@@ -202,20 +190,20 @@ public class MlFlowReconciler
             ["mlops.aigency.com/component"] = "mlflow-server"
         };
 
+        var serviceName = $"{entity.Name()}-mlflow-server";
+
         var existingServices = await _kubernetes.ListNamespacedServiceAsync(
             entity.Namespace(), labelSelector: serviceLabels.AsLabelSelector());
 
         if (existingServices.Items.Count == 0)
         {
-            _logger.LogInformation(
-                "Existing mlflow service not found for {EnvironmentName}. Creating a new mlflow service",
-                entity.Name());
+            _logger.CreatingService(serviceName, entity.Name(), entity.Namespace());
 
             var service = new V1Service
             {
                 Metadata = new V1ObjectMeta
                 {
-                    Name = $"{entity.Name()}-mlflow-server",
+                    Name = serviceName,
                     Labels = serviceLabels,
                 },
                 Spec = new V1ServiceSpec

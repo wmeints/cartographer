@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Cartographer.Common;
 using Cartographer.V1Alpha1.Entities;
 using k8s;
 using k8s.Models;
@@ -49,7 +50,7 @@ public class PrefectAgentReconciler
             ["mlops.aigency.com/environment"] = entity.Name()
         };
 
-        var existingStatefulSets = await _kubernetes.ListNamespacedStatefulSetAsync(
+        V1StatefulSetList existingStatefulSets = await _kubernetes.ListNamespacedStatefulSetAsync(
             entity.Namespace(), labelSelector: statefulSetLabels.AsLabelSelector());
 
         foreach (var statefulSet in existingStatefulSets.Items)
@@ -90,9 +91,9 @@ public class PrefectAgentReconciler
     private async Task ScaleAgentPoolAsync(V1Alpha1Workspace entity, V1Alpha1Workspace.AgentPoolSpec agentPoolSpec,
         V1StatefulSet existingStatefulSet)
     {
-        _logger.LogInformation(
-            "Scaling agent pool {AgentPool} for environment {EnvironmentName}",
-            agentPoolSpec.Name, entity.Name());
+        _logger.ScalingDeployment(
+            $"{entity.Name()}-agent-{agentPoolSpec.Name}",
+            entity.Name(), entity.Namespace(), agentPoolSpec.Replicas);
 
         var patchDocument = JsonPatchDocumentBuilder.BuildFor<V1StatefulSet>();
         patchDocument.Replace(x => x.Spec.Replicas, agentPoolSpec.Replicas);
@@ -106,11 +107,7 @@ public class PrefectAgentReconciler
     private async Task CreateAgentPoolDeploymentAsync(V1Alpha1Workspace entity,
         V1Alpha1Workspace.AgentPoolSpec agentPoolSpec, Dictionary<string, string> labels)
     {
-        _logger.LogInformation(
-            "Agent stateful set for {AgentPool} in {EnvironmentName} not found. Creating a new one",
-            agentPoolSpec.Name,
-            entity.Name());
-
+        var statefulSetName = $"{entity.Name()}-agent-{agentPoolSpec.Name}";
         var deploymentImageName = agentPoolSpec.Image;
 
         if (string.IsNullOrEmpty(deploymentImageName))
@@ -118,11 +115,13 @@ public class PrefectAgentReconciler
             deploymentImageName = "prefecthq/prefect:2-latest";
         }
 
+        _logger.CreatingStatefulSet(statefulSetName, entity.Name(), entity.Namespace());
+
         var statefulSet = new V1StatefulSet
         {
             Metadata = new V1ObjectMeta
             {
-                Name = $"{entity.Name()}-agent-{agentPoolSpec.Name}",
+                Name = statefulSetName,
                 Labels = labels,
             },
             Spec = new V1StatefulSetSpec
@@ -168,22 +167,8 @@ public class PrefectAgentReconciler
             }
         };
 
-        try
-        {
-            await _kubernetes.CreateNamespacedStatefulSetAsync(
-                statefulSet.WithOwnerReference(entity),
-                entity.Namespace());
-        }
-        catch (HttpOperationException ex)
-        {
-            if (ex.Response != null)
-            {
-                _logger.LogError(ex,
-                    "Failed to create agent stateful set for {EnvironmentName}: {StatusCode} {Reason}",
-                    entity.Name(), ex.Response.StatusCode, ex.Response.Content);
-            }
-
-            throw;
-        }
+        await _kubernetes.CreateNamespacedStatefulSetAsync(
+            statefulSet.WithOwnerReference(entity),
+            entity.Namespace());
     }
 }

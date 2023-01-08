@@ -94,7 +94,7 @@ public class V1Alpha1Workspace : CustomKubernetesEntity<V1Alpha1Workspace.Enviro
         /// <summary>
         /// Gets or sets the resource limits for the agents in the pool.
         /// </summary>
-        public Dictionary<string, ResourceQuantity> ResourceLimits { get; set; } = new()
+        public Dictionary<string, ResourceQuantity> ResourceRequests { get; set; } = new()
         {
             ["cpu"] = new ResourceQuantity("250m"),
             ["memory"] = new ResourceQuantity("512Mi")
@@ -103,7 +103,7 @@ public class V1Alpha1Workspace : CustomKubernetesEntity<V1Alpha1Workspace.Enviro
         /// <summary>
         /// Gets or sets the resource requests for the agents in the pool.
         /// </summary>
-        public Dictionary<string, ResourceQuantity> ResourceRequests { get; set; } = new()
+        public Dictionary<string, ResourceQuantity> ResourceLimits { get; set; } = new()
         {
             ["cpu"] =  new ResourceQuantity("2"),
             ["memory"] = new ResourceQuantity("16Gi")

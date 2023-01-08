@@ -16,18 +16,16 @@ namespace Cartographer.V1Alpha1.Controllers;
 public class V1Alpha1WorkspaceController : IResourceController<V1Alpha1Workspace>
 {
     private readonly ILogger<V1Alpha1WorkspaceController> _logger;
-    private readonly OrionDatabaseReconciler _orionDatabaseReconciler;
+    private readonly PostgresClusterReconciler _postgresReconciler;
     private readonly OrionServerReconciler _orionServerReconciler;
-    private readonly EnvironmentSecretsReconciler _environmentSecretsReconciler;
     private readonly PrefectAgentReconciler _prefectAgentReconciler;
     private readonly MlFlowReconciler _mlflowReconciler;
     
     public V1Alpha1WorkspaceController(ILogger<V1Alpha1WorkspaceController> logger, IKubernetes kubernetes)
     {
         _logger = logger;
-        _orionDatabaseReconciler = new OrionDatabaseReconciler(kubernetes, logger);
+        _postgresReconciler = new PostgresClusterReconciler(kubernetes, logger);
         _orionServerReconciler = new OrionServerReconciler(kubernetes, logger);
-        _environmentSecretsReconciler = new EnvironmentSecretsReconciler(kubernetes, logger);
         _prefectAgentReconciler = new PrefectAgentReconciler(kubernetes, logger);
         _mlflowReconciler = new MlFlowReconciler(kubernetes, logger);
     }
@@ -36,8 +34,7 @@ public class V1Alpha1WorkspaceController : IResourceController<V1Alpha1Workspace
     {
         _logger.LogInformation("Reconciling the workspace {EnvironmentName}", entity.Name());
 
-        await _environmentSecretsReconciler.ReconcileAsync(entity);
-        await _orionDatabaseReconciler.ReconcileAsync(entity);
+        await _postgresReconciler.ReconcileAsync(entity);
         await _orionServerReconciler.ReconcileAsync(entity);
         await _prefectAgentReconciler.ReconcileAsync(entity);
         await _mlflowReconciler.ReconcileAsync(entity);

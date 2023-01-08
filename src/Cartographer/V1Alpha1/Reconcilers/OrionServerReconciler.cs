@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Cartographer.Common;
 using Cartographer.V1Alpha1.Entities;
 using k8s;
 using k8s.Models;
@@ -39,15 +40,15 @@ public class OrionServerReconciler
             ["mlops.aigency.com/component"] = "orion-server",
             ["mlops.aigency.com/environment"] = entity.Name()
         };
-        
+
+        var deploymentName = $"{entity.Name()}-orion-server";
+
         var existingDeployments = await _kubernetes.ListNamespacedDeploymentAsync(
             entity.Namespace(), labelSelector: deploymentLabels.AsLabelSelector());
 
         if (existingDeployments.Items.Count == 0)
         {
-            _logger.LogInformation(
-                "Orion server deployment for {EnvironmentName} not found. Creating a new one",
-                entity.Name());
+            _logger.CreatingDeployment(deploymentName, entity.Name(), entity.Namespace());
 
             var deploymentImageName = entity.Spec.Workflows.Image;
 
@@ -60,7 +61,7 @@ public class OrionServerReconciler
             {
                 Metadata = new V1ObjectMeta
                 {
-                    Name = $"{entity.Name()}-orion-server",
+                    Name = deploymentName,
                     Labels = deploymentLabels
                 },
                 Spec = new V1DeploymentSpec
@@ -90,15 +91,68 @@ public class OrionServerReconciler
                                     {
                                         new V1EnvVar
                                         {
-                                            Name = "PREFECT_ORION_DATABASE_CONNECTION_URL",
+                                            Name = "DB_NAME",
                                             ValueFrom = new V1EnvVarSource
                                             {
                                                 SecretKeyRef = new V1SecretKeySelector
                                                 {
-                                                    Key = "orionDatabaseConnectionUrl",
-                                                    Name = $"{entity.Name()}-environment-secrets"
+                                                    Name = $"{entity.Name()}-db-pguser-orion",
+                                                    Key = "dbname"
                                                 }
                                             }
+                                        },
+                                        new V1EnvVar
+                                        {
+                                            Name = "DB_PORT",
+                                            ValueFrom = new V1EnvVarSource
+                                            {
+                                                SecretKeyRef = new V1SecretKeySelector
+                                                {
+                                                    Name = $"{entity.Name()}-db-pguser-orion",
+                                                    Key = "port"
+                                                }
+                                            }
+                                        },
+                                        new V1EnvVar
+                                        {
+                                            Name = "DB_HOST",
+                                            ValueFrom = new V1EnvVarSource
+                                            {
+                                                SecretKeyRef = new V1SecretKeySelector
+                                                {
+                                                    Name = $"{entity.Name()}-db-pguser-orion",
+                                                    Key = "host"
+                                                }
+                                            }
+                                        },
+                                        new V1EnvVar
+                                        {
+                                            Name = "DB_USER",
+                                            ValueFrom = new V1EnvVarSource
+                                            {
+                                                SecretKeyRef = new V1SecretKeySelector
+                                                {
+                                                    Name = $"{entity.Name()}-db-pguser-orion",
+                                                    Key = "user"
+                                                }
+                                            }
+                                        },
+                                        new V1EnvVar
+                                        {
+                                            Name = "DB_PASS",
+                                            ValueFrom = new V1EnvVarSource
+                                            {
+                                                SecretKeyRef = new V1SecretKeySelector
+                                                {
+                                                    Name = $"{entity.Name()}-db-pguser-orion",
+                                                    Key = "password"
+                                                }
+                                            }
+                                        },
+                                        new V1EnvVar
+                                        {
+                                            Name = "PREFECT_ORION_DATABASE_CONNECTION_URL",
+                                            Value = "postgresql+asyncpg://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
                                         },
                                     },
                                     Ports = new Collection<V1ContainerPort>
@@ -137,21 +191,21 @@ public class OrionServerReconciler
             ["mlops.aigency.com/component"] = "orion-server",
             ["mlops.aigency.com/environment"] = entity.Name()
         };
-        
+
+        var serviceName = $"{entity.Name()}-orion-server";
+
         var existingServices = await _kubernetes.ListNamespacedServiceAsync(
             entity.Namespace(), labelSelector: serviceLabels.AsLabelSelector());
-        
-        if(existingServices.Items.Count == 0)
+
+        if (existingServices.Items.Count == 0)
         {
-            _logger.LogInformation(
-                "Existing orion server service not found for {EnvironmentName}. Creating a new orion server service",
-                entity.Name());
+            _logger.CreatingService(serviceName, entity.Name(), entity.Namespace());
 
             var service = new V1Service
             {
                 Metadata = new V1ObjectMeta
                 {
-                    Name = $"{entity.Name()}-orion-server",
+                    Name = serviceName,
                     Labels = serviceLabels,
                 },
                 Spec = new V1ServiceSpec
