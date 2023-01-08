@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:latest as build
 WORKDIR /operator
 
 COPY ./ ./
-RUN dotnet publish -c Release -o out ../Cartographer.csproj
+RUN dotnet publish /operator/Cartographer.csproj -c Release -o /operator/out/
 
 # The runner for the application
 FROM mcr.microsoft.com/dotnet/aspnet:latest as final
