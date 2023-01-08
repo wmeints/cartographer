@@ -75,6 +75,13 @@ to the prefect server in the workspace:
 kubectl port-forward svc/test-environment-orion-server 4200:4200
 ```
 
+If you're interested in metrics and models, please use the following command
+to get access to the MLFlow server:
+
+```
+kubectl port-forward svc/test-environment-mlflow-server 5000:5000
+```
+
 ### Running from source
 
 To start the operator locally from source, you'll need the .NET 6 SDK in your machine.
