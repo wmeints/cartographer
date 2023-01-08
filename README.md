@@ -56,7 +56,7 @@ When you no longer want to use the operator, use the following command to uninst
 the operator:
 
 ```
-kubectl delete -k install
+kubectl delete -k src/Cartographer/install
 ```
 
 ### Deploying your first workspace
