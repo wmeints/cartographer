@@ -95,4 +95,8 @@ dotnet run --project ./src/Cartographer\Cartographer.csproj
 
 ## Documentation
 
-TODO: Describe how the operator works internally
+### Project structure
+
+- `src`: Source code for the operator
+- `images`: Custom docker images used by the operator
+- `samples`: Sample workspaces that you can try the operator with
