@@ -19,7 +19,14 @@ public class V1Alpha1Workspace : CustomKubernetesEntity<V1Alpha1Workspace.Enviro
         /// <summary>
         /// Gets or sets the orion database desired configuration
         /// </summary>
+        [Description("Configuration for the workflow component")]
         public WorkflowsSpec Workflows { get; set; } = new();
+        
+        /// <summary>
+        /// Gets or sets the MLFlow experiment tracking
+        /// </summary>
+        [Description("Configuration for the MLFlow experiment tracking component")]
+        public ExperimentTrackingSpec ExperimentTracking { get; set; } = new();
     }
 
     /// <summary>
@@ -101,5 +108,17 @@ public class V1Alpha1Workspace : CustomKubernetesEntity<V1Alpha1Workspace.Enviro
             ["cpu"] =  new ResourceQuantity("2"),
             ["memory"] = new ResourceQuantity("16Gi")
         };
+    }
+
+    /// <summary>
+    /// Defines how to configure the experiment tracking components.
+    /// </summary>
+    public class ExperimentTrackingSpec
+    {
+        /// <summary>
+        /// Gets or sets the image to use for the experiment tracking component
+        /// </summary>
+        [Description("The docker image to use for the experiment tracking component. This must be a mlflow image.")]
+        public string Image { get; set; } = String.Empty;
     }
 }

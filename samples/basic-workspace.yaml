@@ -9,4 +9,3 @@ spec:
     agentPools:
       - name: default
         replicas: 1
-    

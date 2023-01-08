@@ -20,6 +20,7 @@ public class V1Alpha1WorkspaceController : IResourceController<V1Alpha1Workspace
     private readonly OrionServerReconciler _orionServerReconciler;
     private readonly EnvironmentSecretsReconciler _environmentSecretsReconciler;
     private readonly PrefectAgentReconciler _prefectAgentReconciler;
+    private readonly MlFlowReconciler _mlflowReconciler;
     
     public V1Alpha1WorkspaceController(ILogger<V1Alpha1WorkspaceController> logger, IKubernetes kubernetes)
     {
@@ -28,6 +29,7 @@ public class V1Alpha1WorkspaceController : IResourceController<V1Alpha1Workspace
         _orionServerReconciler = new OrionServerReconciler(kubernetes, logger);
         _environmentSecretsReconciler = new EnvironmentSecretsReconciler(kubernetes, logger);
         _prefectAgentReconciler = new PrefectAgentReconciler(kubernetes, logger);
+        _mlflowReconciler = new MlFlowReconciler(kubernetes, logger);
     }
 
     public async Task<ResourceControllerResult?> ReconcileAsync(V1Alpha1Workspace entity)
@@ -38,6 +40,7 @@ public class V1Alpha1WorkspaceController : IResourceController<V1Alpha1Workspace
         await _orionDatabaseReconciler.ReconcileAsync(entity);
         await _orionServerReconciler.ReconcileAsync(entity);
         await _prefectAgentReconciler.ReconcileAsync(entity);
+        await _mlflowReconciler.ReconcileAsync(entity);
         
         return null;
     }

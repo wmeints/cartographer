@@ -31,16 +31,17 @@ public class MlFlowReconciler
     /// <param name="entity"></param>
     public async Task ReconcileAsync(V1Alpha1Workspace entity)
     {
-        await ReconcileMLFlowPersistentVolumeClaimAsync(entity);
+        await ReconcileMlFlowPersistentVolumeClaimAsync(entity);
         await ReconcileMlFlowServerDeploymentAsync(entity);
+        await ReconcileMlFlowServerServiceAsync(entity);
     }
 
-    private async Task ReconcileMLFlowPersistentVolumeClaimAsync(V1Alpha1Workspace entity)
+    private async Task ReconcileMlFlowPersistentVolumeClaimAsync(V1Alpha1Workspace entity)
     {
         var persistentVolumeClaimLabels = new Dictionary<string, string>
         {
             ["mlops.aigency.com/environment"] = entity.Name(),
-            ["mlops.aigency.com/component"] = $"{entity.Name()}-mlflow-server-pvc",
+            ["mlops.aigency.com/component"] = "mlflow-server"
         };
 
         var existingPersistentVolumeClaims = await _kubernetes.ListNamespacedPersistentVolumeClaimAsync(
@@ -49,7 +50,7 @@ public class MlFlowReconciler
         if (existingPersistentVolumeClaims.Items.Count == 0)
         {
             _logger.LogInformation(
-                "Existing database PVC not found for {EnvironmentName}. Creating a new PVC for the environment",
+                "Existing mlflow PVC not found for {EnvironmentName}. Creating a new PVC for mlflow",
                 entity.Name());
 
             var persistentVolumeClaim = new V1PersistentVolumeClaim
@@ -95,9 +96,16 @@ public class MlFlowReconciler
         if (existingDeployments.Items.Count == 0)
         {
             _logger.LogInformation(
-                "Existing database deployment not found for {EnvironmentName}. Creating a new database deployment",
+                "Existing mlflow deployment not found for {EnvironmentName}. Creating a new mlflow deployment",
                 entity.Name());
 
+            var deploymentImageName = entity.Spec.ExperimentTracking.Image;
+
+            if (string.IsNullOrEmpty(deploymentImageName))
+            {
+                deploymentImageName = "willemmeints/mlflow:2.1.1";
+            }
+            
             var deployment = new V1Deployment
             {
                 Metadata = new V1ObjectMeta
@@ -126,7 +134,7 @@ public class MlFlowReconciler
                                 new V1Container
                                 {
                                     Name = "mlflow",
-                                    Image = "willemmeints/mlflow:2.1.1",
+                                    Image = deploymentImageName,
                                     Env = new Collection<V1EnvVar>
                                     {
                                         new V1EnvVar
@@ -182,6 +190,53 @@ public class MlFlowReconciler
             
             await _kubernetes.CreateNamespacedDeploymentAsync(
                 deployment.WithOwnerReference(entity),
+                entity.Namespace());
+        }
+    }
+    
+    private async Task ReconcileMlFlowServerServiceAsync(V1Alpha1Workspace entity)
+    {
+        var serviceLabels = new Dictionary<string, string>
+        {
+            ["mlops.aigency.com/environment"] = entity.Name(),
+            ["mlops.aigency.com/component"] = "mlflow-server"
+        };
+
+        var existingServices = await _kubernetes.ListNamespacedServiceAsync(
+            entity.Namespace(), labelSelector: serviceLabels.AsLabelSelector());
+
+        if (existingServices.Items.Count == 0)
+        {
+            _logger.LogInformation(
+                "Existing mlflow service not found for {EnvironmentName}. Creating a new mlflow service",
+                entity.Name());
+
+            var service = new V1Service
+            {
+                Metadata = new V1ObjectMeta
+                {
+                    Name = $"{entity.Name()}-mlflow-server",
+                    Labels = serviceLabels,
+                },
+                Spec = new V1ServiceSpec
+                {
+                    Type = "ClusterIP",
+                    Selector = serviceLabels,
+                    Ports = new Collection<V1ServicePort>
+                    {
+                        new V1ServicePort
+                        {
+                            Name = "http-mlflow",
+                            Port = 5000,
+                            Protocol = "TCP",
+                            TargetPort = 5000
+                        }
+                    }
+                }
+            };
+
+            await _kubernetes.CreateNamespacedServiceAsync(
+                service.WithOwnerReference(entity),
                 entity.Namespace());
         }
     }
