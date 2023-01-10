@@ -48,6 +48,39 @@ spec:
                     description: Image defines the custom docker image to use for
                       deploying MLFlow
                     type: string
+                  replicas:
+                    description: Replicas defines the number of replicas to deploy
+                      for the experiment tracking component
+                    format: int32
+                    minimum: 1
+                    type: integer
+                  resources:
+                    description: Resources define the resource requirements for the
+                      experiment tracking component
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                    type: object
                 type: object
               workflows:
                 description: Workflows defines the configuration for the workflow
@@ -106,21 +139,54 @@ spec:
                       type: object
                     minItems: 1
                     type: array
-                  controllerReplicas:
-                    description: ControllerReplicas defines the number of replicas
-                      to deploy for the workflow server
-                    format: int32
-                    minimum: 1
-                    type: integer
-                  databaseConnectionSecret:
-                    description: DatabaseConnectionSecret references a secret containing,
-                      host, port, username, password, dbname keys for connecting to
-                      the database used for the workflow component.
-                    type: string
-                  image:
-                    description: Image defines the custom docker image to use for
-                      deploying the workflow server
-                    type: string
+                  controller:
+                    description: Controller defines the configuration for the workflow
+                      server
+                    properties:
+                      controller:
+                        description: Image defines the docker image to use for the
+                          controller
+                        type: string
+                      databaseConnectionSecret:
+                        description: DatabaseConnectionSecret references a secret
+                          containing, host, port, username, password, dbname keys
+                          for connecting to the database used for the workflow component.
+                        type: string
+                      replicas:
+                        description: ControllerReplicas defines the number of replicas
+                          to deploy for the workflow server
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      resources:
+                        description: ControllerResources defines the resource limits
+                          and requests for the workflow server
+                        properties:
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                        type: object
+                    type: object
                 type: object
             type: object
           status:
