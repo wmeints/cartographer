@@ -1,4 +1,0 @@
-# Exclude generated kubernetes manifests
-config/crds
-config/rbac
-config/operator

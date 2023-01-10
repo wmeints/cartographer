@@ -1,104 +1,94 @@
-# Cartographer
-
-This project implements a custom operator for Kubernetes that manages the MLOps environments.
-I've started this project because I don't want to deal with Helm and I need something that also manages my
-environment after I've deployed it on Kubernetes.
-
-I want to spend my time building and deploying models. The rest of my stuff should just work. Therefore I'm trying
-to automate as much of the operations work as possible for the environments I work in.
-
-------------------------------------------------------------------------------------------------------------------------
-
-**Note:** This is an experiment to see if my idea is viable. Feel free to give it a try on your own Kubernetes environment. 
-Currently, only the workflow bits work. You've been warned :grin:
-
-------------------------------------------------------------------------------------------------------------------------
+# cartographer
+// TODO(user): Add simple overview of use/purpose
 
 ## Description
-
-Cartographer allows you to create a `Workspace` in your kubernetes cluster. The controller automatically deploys 
-a number of components for the workspaces it manages:
-
-- Prefect orion server to manage pipelines
-- One or more pools of Prefect agents to run the pipelines
-
-You can scale the resources in the workspace by editing the properties of the workspace accordingly.
-For now, you'll need to look at the YAML files in the `samples` directory to learn more about
-the structure of a workspace definition.
-
-After the workspace is configured, you can forward the orion service by executing the following command:
-
-```
-kubectl port-forward svc/<environment>-orion-server 4200:4200
-```
-
-Make sure to use the name of the workspace to forward to the correct namespace. 
-After forwarding the port, you can access the orion server on `http://localhost:4200`.
+// TODO(user): An in-depth paragraph about your project and overview of use
 
 ## Getting Started
+You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run against a remote cluster.
+**Note:** Your controller will automatically use the current context in your kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
 
-You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster
-for testing, or run against a remote cluster. 
+### Running on the cluster
+1. Install Instances of Custom Resources:
 
-### Installing the operator
-
-Unpack the release zip into a dedicated folder and verify the settings in `install/kustomization.yaml`. 
-When you're satisfied with the settings in the kustomization file, run the following command
-to install the operator:
-
-```
-kubectl apply --server-side -k install
+```sh
+kubectl apply -f config/samples/
 ```
 
-### Uninstalling the operator
-
-When you no longer want to use the operator, use the following command to uninstall
-the operator:
-
+2. Build and push your image to the location specified by `IMG`:
+	
+```sh
+make docker-build docker-push IMG=<some-registry>/cartographer:tag
 ```
-kubectl delete -k src/Cartographer/install
-```
+	
+3. Deploy the controller to the cluster with the image specified by `IMG`:
 
-### Deploying your first workspace
-
-After installing the operator, you can create a new workspace. For example,
-you can run the following command to create a very basic workspace:
-
-```
-kubectl apply -f samples/basic-workspace.yaml
+```sh
+make deploy IMG=<some-registry>/cartographer:tag
 ```
 
-When you've created the workspace, you can connect it by forwarding the port
-to the prefect server in the workspace:
+### Uninstall CRDs
+To delete the CRDs from the cluster:
 
-```
-kubectl port-forward svc/test-environment-orion-server 4200:4200
-```
-
-If you're interested in metrics and models, please use the following command
-to get access to the MLFlow server:
-
-```
-kubectl port-forward svc/test-environment-mlflow-server 5000:5000
+```sh
+make uninstall
 ```
 
-### Running from source
+### Undeploy controller
+UnDeploy the controller to the cluster:
 
-To start the operator locally from source, you'll need the .NET 6 SDK in your machine.
-Run the following command to install the custom resource definitions and run the operator:
-
-```
-dotnet run -- install
-dotnet run --project ./src/Cartographer\Cartographer.csproj
+```sh
+make undeploy
 ```
 
-**Note:** Your controller will automatically use the current context in your kubeconfig file 
-(i.e. whatever cluster `kubectl cluster-info` shows). 
+## Contributing
+// TODO(user): Add detailed information on how you would like others to contribute to this project
 
-## Documentation
+### How it works
+This project aims to follow the Kubernetes [Operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)
 
-### Project structure
+It uses [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/) 
+which provides a reconcile function responsible for synchronizing resources untile the desired state is reached on the cluster 
 
-- `src`: Source code for the operator
-- `images`: Custom docker images used by the operator
-- `samples`: Sample workspaces that you can try the operator with
+### Test It Out
+1. Install the CRDs into the cluster:
+
+```sh
+make install
+```
+
+2. Run your controller (this will run in the foreground, so switch to a new terminal if you want to leave it running):
+
+```sh
+make run
+```
+
+**NOTE:** You can also run this in one step by running: `make install run`
+
+### Modifying the API definitions
+If you are editing the API definitions, generate the manifests such as CRs or CRDs using:
+
+```sh
+make manifests
+```
+
+**NOTE:** Run `make --help` for more information on all potential `make` targets
+
+More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+
+## License
+
+Copyright 2023 Willem Meints.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
