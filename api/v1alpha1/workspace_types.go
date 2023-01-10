@@ -36,16 +36,25 @@ type WorkspaceStatus struct {
 
 // WorkflowComponentSpec defines the configuration for the workflow component
 type WorkflowComponentSpec struct {
-	// Image defines the custom docker image to use for deploying the workflow server
-	Image string `json:"image,omitempty"`
+	// Controller defines the configuration for the workflow server
+	Controller WorkflowControllerSpec `json:"controller,omitempty"`
 
 	// Agents defines the agent pools to deploy
 	// +kubebuilder:validation:MinItems=1
 	Agents []WorkflowAgentPoolSpec `json:"agentPools,omitempty"`
+}
 
+// WorkflowControllerSpec defines the configuration for the workflow controller
+type WorkflowControllerSpec struct {
 	// ControllerReplicas defines the number of replicas to deploy for the workflow server
 	// +kubebuilder:validation:Minimum=1
-	ControllerReplicas *int32 `json:"controllerReplicas,omitempty"`
+	Replicas *int32 `json:"replicas,omitempty"`
+
+	// ControllerResources defines the resource limits and requests for the workflow server
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// Image defines the docker image to use for the controller
+	Image string `json:"controller,omitempty"`
 
 	// DatabaseConnectionSecret references a secret containing, host, port, username, password, dbname keys for connecting
 	// to the database used for the workflow component.
@@ -74,9 +83,16 @@ type ExperimentTrackingComponentSpec struct {
 	// Image defines the custom docker image to use for deploying MLFlow
 	Image string `json:"image,omitempty"`
 
+	// Replicas defines the number of replicas to deploy for the experiment tracking component
+	// +kubebuilder:validation:Minimum=1
+	Replicas *int32 `json:"replicas,omitempty"`
+
 	// DatabaseConnectionSecret references a secret containing, host, port, username, password, dbname keys for connecting
 	// to the database used for the experiment tracking component.
 	DatabaseConnectionSecret string `json:"databaseConnectionSecret,omitempty"`
+
+	// Resources define the resource requirements for the experiment tracking component
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 //+kubebuilder:object:root=true

@@ -9,7 +9,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -39,15 +38,15 @@ func (r *WorkspaceReconciler) reconcileWorkflowServer(ctx context.Context, works
 
 func (r *WorkspaceReconciler) reconcileWorkflowServerDeployment(ctx context.Context, logger logr.Logger, workspace *mlopsv1alpha1.Workspace) error {
 	deploymentName := fmt.Sprintf("%s-orion-server", workspace.GetName())
-	deploymentLabels := makeOrionServerLabels(workspace)
+	deploymentLabels := newComponentLabels(workspace, "workflow-server")
 
-	deploymentImageName := workspace.Spec.Workflows.Image
+	deploymentImageName := workspace.Spec.Workflows.Controller.Image
 
 	if deploymentImageName == "" {
 		deploymentImageName = "prefecthq/prefect:2-latest"
 	}
 
-	databaseSecretName := workspace.Spec.Workflows.DatabaseConnectionSecret
+	databaseSecretName := workspace.Spec.Workflows.Controller.DatabaseConnectionSecret
 
 	deployment := &appsv1.Deployment{}
 
@@ -63,7 +62,7 @@ func (r *WorkspaceReconciler) reconcileWorkflowServerDeployment(ctx context.Cont
 					Selector: &metav1.LabelSelector{
 						MatchLabels: deploymentLabels,
 					},
-					Replicas: workspace.Spec.Workflows.ControllerReplicas,
+					Replicas: workspace.Spec.Workflows.Controller.Replicas,
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:   deploymentName,
@@ -79,60 +78,16 @@ func (r *WorkspaceReconciler) reconcileWorkflowServerDeployment(ctx context.Cont
 										"orion",
 										"start",
 									},
-									Env: []corev1.EnvVar{
-										{
-											Name: "DB_HOST",
-											ValueFrom: &corev1.EnvVarSource{
-												SecretKeyRef: &corev1.SecretKeySelector{
-													Key: "host",
-													LocalObjectReference: corev1.LocalObjectReference{
-														Name: databaseSecretName,
-													},
-												},
+									Env: append(
+										[]corev1.EnvVar{
+											{
+												Name:  "PREFECT_ORION_DATABASE_CONNECTION_URL",
+												Value: "postgresql+asyncpg://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)",
 											},
 										},
-										{
-											Name: "DB_PORT",
-											ValueFrom: &corev1.EnvVarSource{
-												SecretKeyRef: &corev1.SecretKeySelector{
-													Key: "port",
-													LocalObjectReference: corev1.LocalObjectReference{
-														Name: databaseSecretName,
-													},
-												},
-											},
-										},
-										{
-											Name: "DB_USER",
-											ValueFrom: &corev1.EnvVarSource{
-												SecretKeyRef: &corev1.SecretKeySelector{
-													Key: "user",
-													LocalObjectReference: corev1.LocalObjectReference{
-														Name: databaseSecretName,
-													},
-												},
-											},
-										},
-										{
-											Name: "DB_PASS",
-											ValueFrom: &corev1.EnvVarSource{
-												SecretKeyRef: &corev1.SecretKeySelector{
-													Key: "password",
-													LocalObjectReference: corev1.LocalObjectReference{
-														Name: databaseSecretName,
-													},
-												},
-											},
-										},
-										{
-											Name:  "PREFECT_ORION_DATABASE_CONNECTION_URL",
-											Value: "postgresql+asyncpg://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)",
-										},
-									},
-									Resources: corev1.ResourceRequirements{
-										Requests: makeResourceList("100m", "512Mi"),
-										Limits:   makeResourceList("500m", "1Gi"),
-									},
+										newDatabaseSecretEnvVars(databaseSecretName)...,
+									),
+									Resources: workspace.Spec.Workflows.Controller.Resources,
 									Ports: []corev1.ContainerPort{
 										{
 											Name:          "http-orion",
@@ -159,8 +114,8 @@ func (r *WorkspaceReconciler) reconcileWorkflowServerDeployment(ctx context.Cont
 			return nil
 		}
 
-		deployment.Spec.Replicas = workspace.Spec.Workflows.ControllerReplicas
-		deployment.Spec.Template.Spec.Containers[0].Image = workspace.Spec.Workflows.Image
+		deployment.Spec.Replicas = workspace.Spec.Workflows.Controller.Replicas
+		deployment.Spec.Template.Spec.Containers[0].Image = workspace.Spec.Workflows.Controller.Image
 
 		if err := r.Update(ctx, deployment); err != nil {
 			logger.Error(err, "Failed to scale deployment for orion server")
@@ -176,7 +131,7 @@ func (r *WorkspaceReconciler) reconcileWorkflowServerDeployment(ctx context.Cont
 
 func (r *WorkspaceReconciler) reconcileWorkflowServerService(ctx context.Context, logger logr.Logger, workspace *mlopsv1alpha1.Workspace) error {
 	serviceName := fmt.Sprintf("%s-orion-server", workspace.GetName())
-	serviceLabels := makeOrionServerLabels(workspace)
+	serviceLabels := newComponentLabels(workspace, "workflow-server")
 
 	service := &corev1.Service{}
 
@@ -223,13 +178,9 @@ func (r *WorkspaceReconciler) reconcileWorkflowServerService(ctx context.Context
 }
 
 func (r *WorkspaceReconciler) reconcileWorkflowAgents(ctx context.Context, logger logr.Logger, workspace *mlopsv1alpha1.Workspace) error {
-
 	for _, agentPoolSpec := range workspace.Spec.Workflows.Agents {
-		statefulSetLabels := map[string]string{
-			"mlops.aigency.com/environment": workspace.GetName(),
-			"mlops.aigency.com/component":   "prefect-agent",
-			"mlops.aigency.com/pool":        agentPoolSpec.Name,
-		}
+		statefulSetLabels := newComponentLabels(workspace, "workflow-agent")
+		statefulSetLabels["mlops.aigency.com/pool"] = agentPoolSpec.Name
 
 		statefulSetName := fmt.Sprintf("%s-agent-%s", workspace.GetName(), agentPoolSpec.Name)
 		statefulSetImageName := agentPoolSpec.Image
@@ -326,18 +277,4 @@ func (r *WorkspaceReconciler) reconcileWorkflowAgents(ctx context.Context, logge
 	}
 
 	return nil
-}
-
-func makeResourceList(cpuAmount string, memoryAmount string) corev1.ResourceList {
-	return corev1.ResourceList{
-		"cpu":    resource.MustParse(cpuAmount),
-		"memory": resource.MustParse(memoryAmount),
-	}
-}
-
-func makeOrionServerLabels(workspace *mlopsv1alpha1.Workspace) map[string]string {
-	return map[string]string{
-		"mlops.aigency.com/environment": workspace.GetName(),
-		"mlops.aigency.com/component":   "orion-server",
-	}
 }

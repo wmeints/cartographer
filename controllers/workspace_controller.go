@@ -58,7 +58,7 @@ func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 
-	if err := r.reconcileExperimentTracking(workspace); err != nil {
+	if err := r.reconcileExperimentTracking(ctx, workspace); err != nil {
 		return ctrl.Result{}, err
 	}
 
