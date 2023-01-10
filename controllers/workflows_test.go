@@ -49,7 +49,8 @@ var _ = Describe("reconcileWorkflowServer", Ordered, func() {
 					},
 				},
 				ExperimentTracking: mlopsv1alpha1.ExperimentTrackingComponentSpec{
-					Image: "willemmeints/mlflow:2.1.1",
+					Image:                    "willemmeints/mlflow:2.1.1",
+					DatabaseConnectionSecret: "test-secret",
 					Resources: corev1.ResourceRequirements{
 						Limits: corev1.ResourceList{
 							corev1.ResourceCPU:    resource.MustParse("1"),
