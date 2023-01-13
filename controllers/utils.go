@@ -2,7 +2,9 @@ package controllers
 
 import (
 	mlopsv1alpha1 "github.com/wmeints/cartographer/api/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func newDatabaseSecretEnvVars(databaseSecretName string) []corev1.EnvVar {
@@ -58,5 +60,66 @@ func newComponentLabels(workspace *mlopsv1alpha1.Workspace, componentName string
 	return map[string]string{
 		"mlops.aigency.com/environment": workspace.GetName(),
 		"mlops.aigency.com/component":   componentName,
+	}
+}
+
+func newContainer(name string, image string, resources corev1.ResourceRequirements) corev1.Container {
+	return corev1.Container{
+		Name:            name,
+		Image:           image,
+		ImagePullPolicy: corev1.PullIfNotPresent,
+		Resources:       resources,
+	}
+}
+
+func newDeployment(namespaceName string, deploymentName string, deploymentLabels map[string]string, replicas *int32, container corev1.Container) *appsv1.Deployment {
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      deploymentName,
+			Namespace: namespaceName,
+			Labels:    deploymentLabels,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: deploymentLabels,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: deploymentLabels,
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						container,
+					},
+				},
+			},
+		},
+	}
+}
+
+func newStatefulSet(namespaceName string, statefulSetName string, statefulSetLabels map[string]string, replicas *int32, container corev1.Container) *appsv1.StatefulSet {
+	return &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      statefulSetName,
+			Namespace: namespaceName,
+			Labels:    statefulSetLabels,
+		},
+		Spec: appsv1.StatefulSetSpec{
+			Replicas: replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: statefulSetLabels,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: statefulSetLabels,
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						container,
+					},
+				},
+			},
+		},
 	}
 }

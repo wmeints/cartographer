@@ -40,40 +40,28 @@ func (r *WorkspaceReconciler) reconcileExperimentTrackingDeployment(ctx context.
 		if errors.IsNotFound(err) {
 			databaseSecretName := workspace.Spec.ExperimentTracking.DatabaseConnectionSecret
 
-			deployment = &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      deploymentName,
-					Namespace: workspace.GetNamespace(),
-					Labels:    deploymentLabels,
-				},
-				Spec: appsv1.DeploymentSpec{
-					Replicas: workspace.Spec.ExperimentTracking.Replicas,
-					Selector: &metav1.LabelSelector{
-						MatchLabels: deploymentLabels,
-					},
-					Template: corev1.PodTemplateSpec{
-						ObjectMeta: metav1.ObjectMeta{
-							Labels: deploymentLabels,
-						},
-						Spec: corev1.PodSpec{
-							Containers: []corev1.Container{
-								{
-									Name:  "mlflow",
-									Image: workspace.Spec.ExperimentTracking.Image,
-									Env:   newDatabaseSecretEnvVars(databaseSecretName),
-									Ports: []corev1.ContainerPort{
-										{
-											Name:          "http-mlflow",
-											ContainerPort: 5000,
-										},
-									},
-									Resources: workspace.Spec.ExperimentTracking.Resources,
-								},
-							},
-						},
-					},
+			container := newContainer(
+				"mlflow",
+				workspace.Spec.ExperimentTracking.Image,
+				workspace.Spec.ExperimentTracking.Resources,
+			)
+
+			container.Env = newDatabaseSecretEnvVars(databaseSecretName)
+
+			container.Ports = []corev1.ContainerPort{
+				{
+					Name:          "http-mlflow",
+					ContainerPort: 5000,
 				},
 			}
+
+			deployment = newDeployment(
+				workspace.GetNamespace(),
+				deploymentName,
+				deploymentLabels,
+				workspace.Spec.ExperimentTracking.Replicas,
+				container,
+			)
 
 			if err := ctrl.SetControllerReference(workspace, deployment, r.Scheme); err != nil {
 				logger.Error(err, "Failed to set controller reference for deployment of experiment tracking server")
@@ -125,6 +113,8 @@ func (r *WorkspaceReconciler) reconcileExperimentTrackingDeployment(ctx context.
 }
 
 func (r *WorkspaceReconciler) reconcileExperimentTrackingService(ctx context.Context, workspace *mlopsv1alpha1.Workspace) error {
+	logger := log.FromContext(ctx).WithValues("workspace", workspace.GetName(), "namespace", workspace.GetNamespace())
+
 	serviceLabels := newComponentLabels(workspace, "experiment-tracking")
 	serviceName := fmt.Sprintf("%s-mlflow-server", workspace.GetName())
 
@@ -149,6 +139,16 @@ func (r *WorkspaceReconciler) reconcileExperimentTrackingService(ctx context.Con
 						},
 					},
 				},
+			}
+
+			if err := ctrl.SetControllerReference(workspace, service, r.Scheme); err != nil {
+				logger.Error(err, "Failed to set controller reference for service of experiment tracking server")
+				return err
+			}
+
+			if err := r.Create(ctx, service); err != nil {
+				logger.Error(err, "Failed to create service for experiment tracking server")
+				return err
 			}
 
 			return nil
