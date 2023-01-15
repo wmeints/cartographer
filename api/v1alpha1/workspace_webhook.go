@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
+	"k8s.io/utils/strings/slices"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -151,6 +152,7 @@ func (r *Workspace) ValidateUpdate(old runtime.Object) error {
 
 	validationErrors = append(validationErrors, validateExperimentTrackingSpec(r)...)
 	validationErrors = append(validationErrors, validateWorkflowControllerSpec(r)...)
+	validationErrors = append(validationErrors, validateWorkflowAgentPoolNames(r)...)
 
 	if len(validationErrors) > 0 {
 		groupKind := schema.GroupKind{Group: "mlops.aigency.com", Kind: "Workspace"}
@@ -191,6 +193,27 @@ func validateExperimentTrackingSpec(r *Workspace) field.ErrorList {
 		)
 
 		validationErrors = append(validationErrors, err)
+	}
+
+	return validationErrors
+}
+
+func validateWorkflowAgentPoolNames(r *Workspace) field.ErrorList {
+	validationErrors := field.ErrorList{}
+	var agentNames []string
+
+	for index, agentPoolSpec := range r.Spec.Workflows.Agents {
+		if slices.Contains(agentNames, agentPoolSpec.Name) {
+			err := field.Invalid(
+				field.NewPath("spec").Child("workflows").Child("agents").Index(index).Child("name"),
+				agentPoolSpec.Name,
+				"name must be unique",
+			)
+
+			validationErrors = append(validationErrors, err)
+		}
+
+		agentNames = append(agentNames, agentPoolSpec.Name)
 	}
 
 	return validationErrors
