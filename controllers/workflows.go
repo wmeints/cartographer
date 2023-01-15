@@ -9,7 +9,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -88,23 +87,14 @@ func (r *WorkspaceReconciler) reconcileWorkflowServerService(ctx context.Context
 
 	if err := r.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: workspace.GetNamespace()}, service); err != nil {
 		if errors.IsNotFound(err) {
-			service = &corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      serviceName,
-					Namespace: workspace.GetNamespace(),
-					Labels:    serviceLabels,
-				},
-				Spec: corev1.ServiceSpec{
-					Type:     corev1.ServiceTypeClusterIP,
-					Selector: serviceLabels,
-					Ports: []corev1.ServicePort{
-						{
-							Name:       "http-orion",
-							Protocol:   corev1.ProtocolTCP,
-							Port:       4200,
-							TargetPort: intstr.FromInt(4200),
-						},
-					},
+			service = newService(serviceName, workspace.GetNamespace(), serviceLabels)
+
+			service.Spec.Ports = []corev1.ServicePort{
+				{
+					Name:       "http-orion",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       4200,
+					TargetPort: intstr.FromInt(4200),
 				},
 			}
 

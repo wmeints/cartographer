@@ -69,6 +69,8 @@ func defaultWorkflowsSpec(r *Workspace) {
 		r.Spec.Workflows.Controller.Replicas = pointer.Int32(1)
 	}
 
+	agents := []WorkflowAgentPoolSpec{}
+
 	for _, agentPoolSpec := range r.Spec.Workflows.Agents {
 		if agentPoolSpec.Image == "" {
 			agentPoolSpec.Image = "prefecthq/prefect:2-latest"
@@ -91,7 +93,11 @@ func defaultWorkflowsSpec(r *Workspace) {
 		if agentPoolSpec.Replicas == nil {
 			agentPoolSpec.Replicas = pointer.Int32(1)
 		}
+
+		agents = append(agents, agentPoolSpec)
 	}
+
+	r.Spec.Workflows.Agents = agents
 }
 
 func defaultExperimentTrackingSpec(r *Workspace) {

@@ -123,3 +123,16 @@ func newStatefulSet(namespaceName string, statefulSetName string, statefulSetLab
 		},
 	}
 }
+
+func newService(name string, namespace string, serviceLabels map[string]string) *corev1.Service {
+	return &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Type:     corev1.ServiceTypeClusterIP,
+			Selector: serviceLabels,
+		},
+	}
+}
