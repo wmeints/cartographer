@@ -18,7 +18,11 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -122,4 +126,72 @@ func defaultExperimentTrackingSpec(r *Workspace) {
 			corev1.ResourceMemory: resource.MustParse("512Mi"),
 		}
 	}
+}
+
+//+kubebuilder:webhook:path=/validate-mlops-aigency-com-v1alpha1-workspace,mutating=false,failurePolicy=fail,sideEffects=None,groups=mlops.aigency.com,resources=workspaces,verbs=create;update,versions=v1alpha1,name=mworkspace.kb.io,admissionReviewVersions=v1
+
+var _ webhook.Validator = &Workspace{}
+
+func (r *Workspace) ValidateCreate() error {
+	validationErrors := field.ErrorList{}
+
+	validationErrors = append(validationErrors, validateExperimentTrackingSpec(r)...)
+	validationErrors = append(validationErrors, validateWorkflowControllerSpec(r)...)
+
+	if len(validationErrors) > 0 {
+		groupKind := schema.GroupKind{Group: "mlops.aigency.com", Kind: "Workspace"}
+		return apierrors.NewInvalid(groupKind, r.Name, validationErrors)
+	}
+
+	return nil
+}
+
+func (r *Workspace) ValidateUpdate(old runtime.Object) error {
+	validationErrors := field.ErrorList{}
+
+	validationErrors = append(validationErrors, validateExperimentTrackingSpec(r)...)
+	validationErrors = append(validationErrors, validateWorkflowControllerSpec(r)...)
+
+	if len(validationErrors) > 0 {
+		groupKind := schema.GroupKind{Group: "mlops.aigency.com", Kind: "Workspace"}
+		return apierrors.NewInvalid(groupKind, r.Name, validationErrors)
+	}
+
+	return nil
+}
+
+func (r *Workspace) ValidateDelete() error {
+	return nil
+}
+
+func validateWorkflowControllerSpec(r *Workspace) field.ErrorList {
+	validationErrors := field.ErrorList{}
+
+	if r.Spec.Workflows.Controller.DatabaseConnectionSecret == "" {
+		err := field.Invalid(
+			field.NewPath("spec").Child("workflows").Child("controller").Child("databaseConnectionSecret"),
+			r.Spec.Workflows.Controller.DatabaseConnectionSecret,
+			"must be set",
+		)
+
+		validationErrors = append(validationErrors, err)
+	}
+
+	return validationErrors
+}
+
+func validateExperimentTrackingSpec(r *Workspace) field.ErrorList {
+	validationErrors := field.ErrorList{}
+
+	if r.Spec.ExperimentTracking.DatabaseConnectionSecret == "" {
+		err := field.Invalid(
+			field.NewPath("spec").Child("experimentTracking").Child("databaseConnectionSecret"),
+			r.Spec.ExperimentTracking.DatabaseConnectionSecret,
+			"must be set",
+		)
+
+		validationErrors = append(validationErrors, err)
+	}
+
+	return validationErrors
 }
