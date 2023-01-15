@@ -87,4 +87,25 @@ var _ = Describe("Defaulting webhook", func() {
 			},
 		}))
 	})
+
+	It("Should set the default values for experiment tracking", func() {
+		workspace := &Workspace{}
+
+		workspace.Default()
+
+		Expect(workspace.Spec.ExperimentTracking).To(Equal(ExperimentTrackingComponentSpec{
+			Image:    "willemmeints/mlflow:2.1.1",
+			Replicas: pointer.Int32(1),
+			Resources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("1"),
+					corev1.ResourceMemory: resource.MustParse("1Gi"),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("500m"),
+					corev1.ResourceMemory: resource.MustParse("512Mi"),
+				},
+			},
+		}))
+	})
 })
