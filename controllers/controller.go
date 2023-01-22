@@ -37,18 +37,13 @@ type WorkspaceReconciler struct {
 //+kubebuilder:rbac:groups=mlops.aigency.com,resources=workspaces/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=mlops.aigency.com,resources=workspaces/finalizers,verbs=update
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// the Workspace object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
+// Reconcile matches the expected state of the workspace against the cluster state.
+// It automatically updates the cluster state if there's a mismatch.
 func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	workspace := &mlopsv1alpha1.Workspace{}
+	workspace.Default()
 
 	if err := r.Get(ctx, req.NamespacedName, workspace); err != nil {
 		logger.Error(err, "Failed to get the workspace",
@@ -60,7 +55,7 @@ func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	if err := r.reconcileExperimentTracking(ctx, workspace); err != nil {
 		return ctrl.Result{}, err
-	}
+	} 
 
 	if err := r.reconcileWorkflowServer(ctx, workspace); err != nil {
 		return ctrl.Result{}, err
