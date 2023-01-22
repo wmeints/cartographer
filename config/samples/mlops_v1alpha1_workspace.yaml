@@ -12,7 +12,7 @@ spec:
   workflows:
     controller:
       replicas: 1
-      image: prefecthq/prefect:2-latest
+      image: willemmeints/workflow-controller:latest
       resources:
         limits:
           cpu: 500m
@@ -24,7 +24,7 @@ spec:
     agentPools:
       - name: default
         replicas: 1
-        image: prefecthq/prefect:2-latest
+        image: willemmeints/workflow-agent:latest
         resources:
           limits:
             cpu: 2
@@ -34,7 +34,7 @@ spec:
             memory: 500Mi
   experimentTracking:
     replicas: 1
-    image: willemmeints/mlflow:2.1.1
+    image: willemmeints/experiment-tracking:latest
     resources:
       limits:
         cpu: 500m
