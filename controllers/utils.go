@@ -53,6 +53,17 @@ func newDatabaseSecretEnvVars(databaseSecretName string) []corev1.EnvVar {
 				},
 			},
 		},
+		{
+			Name: "DB_NAME",
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					Key: "dbname",
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: databaseSecretName,
+					},
+				},
+			},
+		},
 	}
 }
 
