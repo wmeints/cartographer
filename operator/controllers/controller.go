@@ -37,6 +37,8 @@ type WorkspaceReconciler struct {
 //+kubebuilder:rbac:groups=mlops.aigency.com,resources=workspaces,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=mlops.aigency.com,resources=workspaces/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=mlops.aigency.com,resources=workspaces/finalizers,verbs=update
+//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=apps,resources=deployments;statefulsets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile matches the expected state of the workspace against the cluster state.
 // It automatically updates the cluster state if there's a mismatch.

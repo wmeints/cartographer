@@ -1,80 +1,72 @@
-# cartographer
-// TODO(user): Add simple overview of use/purpose
+# Cartographer
+
+Use cartographer to build your own custom MLOps environment on top of Kubernetes
+with tools like MLFlow, Ray, and Prefect. 
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+
+We made this project to help us manage our own machine learning infrastructure.
+One of the challenges we face daily is the fact that most products offer almost
+no extensibility and usally don't work on your workstation.
+
+We like to use tools that offer a way to start on your workstation and then
+move to the central machine-learning environment without changing code.
+
+Prefect is a workflow solution for Python that you can start with from your own
+machine with a few decorated methods. Cartographer hosts a Prefect controller
+server and a set of agents to run workflows on. 
+
+More often than not, machine-learning workflows grow beyond a single machine.
+We use Ray to help us take machine-learning code that we develop and test on
+a single machine and scale that to multiple agents across a cluster.
+
+We need reproducable projects for our clients. To support this idea, we use 
+MLFlow to track experiments, models, and associated data. You can use MLFlow
+on your own workstation too. 
 
 ## Getting Started
-You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run against a remote cluster.
-**Note:** Your controller will automatically use the current context in your kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
+You’ll need a Kubernetes cluster to run against. You can use 
+[KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run
+against a remote cluster.
+
+**Note:** Your controller will automatically use the current context in your
+kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
 
 ### Running on the cluster
-1. Install Instances of Custom Resources:
 
-```sh
-kubectl apply -f config/samples/
+We have a sample configuration that you can use from the `samples` directory. 
+Please follow these instructions to set up the operator and associated components
+on your cluster.
+
+Before installing anything else, we need to set up cert-manager to make sure we
+can secure communication between the operator and the rest of Kubernetes. Run
+the following command to install cert-manager:
+
+```
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
 ```
 
-2. Build and push your image to the location specified by `IMG`:
-	
-```sh
-make docker-build docker-push IMG=<some-registry>/cartographer:tag
-```
-	
-3. Deploy the controller to the cluster with the image specified by `IMG`:
+First, you'll need to install the postgres operator on your cluster. To install
+it run the following command:
 
-```sh
-make deploy IMG=<some-registry>/cartographer:tag
+```
+kubectl apply --server-side -k ./config/postgres/operator/install/
 ```
 
-### Uninstall CRDs
-To delete the CRDs from the cluster:
+Next, you need to install the cartographer operator:
 
-```sh
-make uninstall
+```
+kubectl apply --server-side -k ./config/cartographer/operator/install/
 ```
 
-### Undeploy controller
-UnDeploy the controller to the cluster:
+### Deploying your first workspace
 
-```sh
-make undeploy
+We've included a sample workspace in the repository. You can deploy it using
+the following command:
+
 ```
-
-## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
-
-### How it works
-This project aims to follow the Kubernetes [Operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)
-
-It uses [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/) 
-which provides a reconcile function responsible for synchronizing resources untile the desired state is reached on the cluster 
-
-### Test It Out
-1. Install the CRDs into the cluster:
-
-```sh
-make install
+kubectl apply -k ./config/cartographer/workspaces/
 ```
-
-2. Run your controller (this will run in the foreground, so switch to a new terminal if you want to leave it running):
-
-```sh
-make run
-```
-
-**NOTE:** You can also run this in one step by running: `make install run`
-
-### Modifying the API definitions
-If you are editing the API definitions, generate the manifests such as CRs or CRDs using:
-
-```sh
-make manifests
-```
-
-**NOTE:** Run `make --help` for more information on all potential `make` targets
-
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
 
 ## License
 

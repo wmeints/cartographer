@@ -1,0 +1,3 @@
+resources:
+  - workspace.yaml
+  - postgres_cluster.yaml
