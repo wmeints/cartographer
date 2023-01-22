@@ -25,6 +25,7 @@ MLFlow to track experiments, models, and associated data. You can use MLFlow
 on your own workstation too. 
 
 ## Getting Started
+
 You’ll need a Kubernetes cluster to run against. You can use 
 [KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run
 against a remote cluster.
@@ -95,4 +96,20 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+## Documentation
+
+### Project layout
+
+This project relies on a number of other projects to perform its task. 
+There are only two components directly included in the project:
+
+* `operator` - This folder contains the cartographer operator managing the workspace.
+* `dashboard` - This folder contains the dashboard that you can use to monitor workspaces.
+
+In essence, the operator only manages components not provided elsewhere. 
+For example, we currently ship these components as part of the operator:
+
+* `experiment-tracking` - We deploy MLFlow into the cluster to track experiments.
+* `workflows` - We deploy Prefect and a set of Prefect agents to help build pipelines.
 
