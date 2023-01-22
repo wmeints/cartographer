@@ -54,7 +54,7 @@ type WorkflowControllerSpec struct {
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 
 	// Image defines the docker image to use for the controller
-	Image string `json:"controller,omitempty"`
+	Image string `json:"image,omitempty"`
 
 	// DatabaseConnectionSecret references a secret containing, host, port, username, password, dbname keys for connecting
 	// to the database used for the workflow component.

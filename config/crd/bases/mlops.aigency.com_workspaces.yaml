@@ -143,14 +143,14 @@ spec:
                     description: Controller defines the configuration for the workflow
                       server
                     properties:
-                      controller:
-                        description: Image defines the docker image to use for the
-                          controller
-                        type: string
                       databaseConnectionSecret:
                         description: DatabaseConnectionSecret references a secret
                           containing, host, port, username, password, dbname keys
                           for connecting to the database used for the workflow component.
+                        type: string
+                      image:
+                        description: Image defines the docker image to use for the
+                          controller
                         type: string
                       replicas:
                         description: ControllerReplicas defines the number of replicas
