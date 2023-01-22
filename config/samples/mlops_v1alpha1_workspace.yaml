@@ -24,7 +24,7 @@ spec:
     agentPools:
       - name: default
         replicas: 1
-        image: prefecthq:prefect:2-latest
+        image: prefecthq/prefect:2-latest
         resources:
           limits:
             cpu: 2
