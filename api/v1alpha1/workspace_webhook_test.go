@@ -9,26 +9,6 @@ import (
 )
 
 var _ = Describe("Defaulting webhook", func() {
-	It("Should set the default values for experiment tracking", func() {
-		workspace := &Workspace{}
-		workspace.Default()
-
-		Expect(workspace.Spec.ExperimentTracking).To(Equal(ExperimentTrackingComponentSpec{
-			Replicas: pointer.Int32Ptr(1),
-			Image:    "willemmeints/mlflow:2.1.1",
-			Resources: corev1.ResourceRequirements{
-				Limits: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("1"),
-					corev1.ResourceMemory: resource.MustParse("1Gi"),
-				},
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("500m"),
-					corev1.ResourceMemory: resource.MustParse("512Mi"),
-				},
-			},
-		}))
-	})
-
 	It("Should set the default values for the workflows", func() {
 		workspace := &Workspace{}
 		workspace.Default()
@@ -36,7 +16,7 @@ var _ = Describe("Defaulting webhook", func() {
 		Expect(workspace.Spec.Workflows).To(Equal(WorkflowComponentSpec{
 			Controller: WorkflowControllerSpec{
 				Replicas: pointer.Int32(1),
-				Image:    "prefecthq/prefect:2-latest",
+				Image:    "willemmeints/workflow-controller:latest",
 				Resources: corev1.ResourceRequirements{
 					Limits: corev1.ResourceList{
 						corev1.ResourceCPU:    resource.MustParse("1"),
@@ -73,7 +53,7 @@ var _ = Describe("Defaulting webhook", func() {
 			{
 				Name:     "test-agent",
 				Replicas: pointer.Int32(1),
-				Image:    "prefecthq/prefect:2-latest",
+				Image:    "willemmeints/workflow-agent:latest",
 				Resources: corev1.ResourceRequirements{
 					Limits: corev1.ResourceList{
 						corev1.ResourceCPU:    resource.MustParse("2"),
@@ -94,7 +74,7 @@ var _ = Describe("Defaulting webhook", func() {
 		workspace.Default()
 
 		Expect(workspace.Spec.ExperimentTracking).To(Equal(ExperimentTrackingComponentSpec{
-			Image:    "willemmeints/mlflow:2.1.1",
+			Image:    "willemmeints/experiment-tracking:latest",
 			Replicas: pointer.Int32(1),
 			Resources: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{

@@ -53,7 +53,7 @@ func (r *Workspace) Default() {
 
 func defaultWorkflowsSpec(r *Workspace) {
 	if r.Spec.Workflows.Controller.Image == "" {
-		r.Spec.Workflows.Controller.Image = "prefecthq/prefect:2-latest"
+		r.Spec.Workflows.Controller.Image = "willemmeints/workflow-controller:latest"
 	}
 
 	if len(r.Spec.Workflows.Controller.Resources.Limits) == 0 {
@@ -78,7 +78,7 @@ func defaultWorkflowsSpec(r *Workspace) {
 
 	for _, agentPoolSpec := range r.Spec.Workflows.Agents {
 		if agentPoolSpec.Image == "" {
-			agentPoolSpec.Image = "prefecthq/prefect:2-latest"
+			agentPoolSpec.Image = "willemmeints/workflow-agent:latest"
 		}
 
 		if len(agentPoolSpec.Resources.Limits) == 0 {
@@ -107,7 +107,7 @@ func defaultWorkflowsSpec(r *Workspace) {
 
 func defaultExperimentTrackingSpec(r *Workspace) {
 	if r.Spec.ExperimentTracking.Image == "" {
-		r.Spec.ExperimentTracking.Image = "willemmeints/mlflow:2.1.1"
+		r.Spec.ExperimentTracking.Image = "willemmeints/experiment-tracking:latest"
 	}
 
 	if r.Spec.ExperimentTracking.Replicas == nil {
