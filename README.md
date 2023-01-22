@@ -68,6 +68,12 @@ the following command:
 kubectl apply -k ./config/cartographer/workspaces/
 ```
 
+After deploying the sample workspace you can access the workflow-controller by
+using a port-forward. For example:
+
+* Prefect server: `kubectl port-forward svc/workspace-sample-orion-server 4200:4200`
+* MLFlow server: `kubectl port-forward svc/workspace-sample-mlflow-server 5000:5000`
+
 ## License
 
 Copyright 2023 Willem Meints.
