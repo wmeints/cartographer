@@ -9,4 +9,37 @@ metadata:
     app.kubernetes.io/created-by: cartographer
   name: workspace-sample
 spec:
-  # TODO(user): Add fields here
+  workflows:
+    controller:
+      replicas: 1
+      image: prefecthq/prefect:2-latest
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 500Mi
+      databaseConnectionSecret: workspace-sample-pguser-prefect
+    agentPools:
+      - name: default
+        replicas: 1
+        image: prefecthq:prefect:2-latest
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 100m
+            memory: 500Mi
+  experimentTracking:
+    replicas: 1
+    image: willemmeints/mlflow:2.1.1
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 500Mi
+    databaseConnectionSecret: workspace-sample-pguser-mlflow
