@@ -46,8 +46,10 @@ the following command to install cert-manager:
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
 ```
 
-First, you'll need to install the postgres operator on your cluster. To install
-it run the following command:
+To use the components deployed by cartographer, you'll need a postgres database.
+We recommend using the crunchy data postgres operator. We've included the 
+required installation files in the repository for your reference. To install
+the postgres operator, run the following command:
 
 ```
 kubectl apply --server-side -k ./config/postgres/operator/install/
@@ -67,6 +69,10 @@ the following command:
 ```
 kubectl apply -k ./config/cartographer/workspaces/
 ```
+
+This command assumes that you're using the postgres operator we included in the
+repository. If you're using something else, you'll need to make sure that you
+change the configuration accordingly.
 
 After deploying the sample workspace you can access the workflow-controller by
 using a port-forward. For example:
