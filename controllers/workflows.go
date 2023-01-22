@@ -168,7 +168,15 @@ func (r *WorkspaceReconciler) createWorkflowAgentPool(ctx context.Context, agent
 	statefulSetLabels := newComponentLabels(workspace, "workflow-agent")
 	statefulSetLabels["mlops.aigency.com/pool"] = agentPoolSpec.Name
 
-	container := newContainer("agent", fmt.Sprintf("%s-agent-%s", workspace.GetName(), agentPoolSpec.Name), agentPoolSpec.Resources)
+	container := newContainer("agent", agentPoolSpec.Image, agentPoolSpec.Resources)
+
+	container.Command = []string{
+		"prefect",
+		"agent",
+		"start",
+		"-q",
+		agentPoolSpec.Name,
+	}
 
 	container.Env = []corev1.EnvVar{
 		{
