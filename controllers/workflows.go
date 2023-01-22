@@ -187,6 +187,10 @@ func (r *WorkspaceReconciler) createWorkflowAgentPool(ctx context.Context, agent
 			Name:  "MLFLOW_TRACKING_URI",
 			Value: fmt.Sprintf("http://%s-orion-server:4200/api", workspace.GetName()),
 		},
+		{
+			Name:  "QUEUE_NAME",
+			Value: agentPoolSpec.Name,
+		},
 	}
 
 	statefulSet := newStatefulSet(workspace.GetNamespace(), statefulSetName, statefulSetLabels, agentPoolSpec.Replicas, container)
@@ -209,15 +213,7 @@ func newWorkflowServerDeployment(workspace *mlopsv1alpha1.Workspace) *appsv1.Dep
 	deploymentLabels := newComponentLabels(workspace, "workflow-server")
 	container := newContainer("orion", workspace.Spec.Workflows.Controller.Image, workspace.Spec.Workflows.Controller.Resources)
 
-	container.Env = append(
-		[]corev1.EnvVar{
-			{
-				Name:  "PREFECT_ORION_DATABASE_CONNECTION_URL",
-				Value: "postgresql+asyncpg://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)",
-			},
-		},
-		newDatabaseSecretEnvVars(workspace.Spec.Workflows.Controller.DatabaseConnectionSecret)...,
-	)
+	container.Env = newDatabaseSecretEnvVars(workspace.Spec.Workflows.Controller.DatabaseConnectionSecret)
 
 	container.Ports = []corev1.ContainerPort{
 		{
