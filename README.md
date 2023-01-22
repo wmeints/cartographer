@@ -34,7 +34,7 @@ kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
 
 ### Running on the cluster
 
-We have a sample configuration that you can use from the `samples` directory. 
+We have a sample configuration that you can use from the `config` directory. 
 Please follow these instructions to set up the operator and associated components
 on your cluster.
 
