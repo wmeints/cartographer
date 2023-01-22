@@ -47,7 +47,11 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 endif
 
 # Image URL to use all building/pushing image targets
-IMG ?= willemmeints/cartographer:latest
+OPERATOR_IMG ?= willemmeints/cartographer:latest
+EXPERIMENTTRACKING_IMG ?= willemmeints/experiment-tracking:latest
+WORKFLOW_CONTROLLER_IMG ?= willemmeints/workflow-controller:latest
+WORKFLOW_AGENT_IMG ?= willemmeints/workflow-agent:latest
+
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.25.0
 
@@ -81,7 +85,7 @@ all: build
 
 .PHONY: help
 help: ## Display this help.
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-35s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 ##@ Development
 
@@ -118,16 +122,46 @@ run: manifests generate fmt vet ## Run a controller from your host.
 # If you wish built the manager image targeting other platforms you can use the --platform flag.
 # (i.e. docker build --platform linux/arm64 ). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
+.PHONY: operator-docker-build
+operator-docker-build: test ## Build docker image with the manager.
+	docker build -t ${OPERATOR_IMG} .
+
+.PHONY: operator-docker-push
+operator-docker-push: ## Push docker image with the manager.
+	docker push ${OPERATOR_IMG}
+
+.PHONY: experiment-tracking-docker-build
+experiment-tracking-docker-build: ## Build experiment tracking docker image
+	docker build -t ${EXPERIMENTTRACKING_IMG} -f docker/experiment-tracking/Dockerfile docker/experiment-tracking
+
+.PHONY: experiment-tracking-docker-push
+experiment-tracking-docker-push: ## Push experiment tracking docker image
+	docker push ${EXPERIMENTTRACKING_IMG}
+
+.PHONY: prefect-controller-docker-build
+workflow-controller-docker-build: ## Build workflow controller docker image
+	docker build -t ${WORKFLOW_CONTROLLER_IMG} -f docker/workflow-controller/Dockerfile docker/workflow-controller
+
+.PHONY: workflow-controller-docker-push
+workflow-controller-docker-push: ## Push workflow controller docker image
+	docker push ${WORKFLOW_CONTROLLER_IMG}
+
+.PHONY: workflow-agent-docker-build
+workflow-agent-docker-build: ## Build workflow agent docker image
+	docker build -t ${WORKFLOW_AGENT_IMG} -f docker/workflow-agent/Dockerfile docker/workflow-agent
+
+.PHONY: workflow-agent-docker-push
+workflow-agent-docker-push: ## Push workflow agent docker image
+	docker push ${WORKFLOW_AGENT_IMG}
+
 .PHONY: docker-build
-docker-build: test ## Build docker image with the manager.
-	docker build -t ${IMG} .
+docker-build: operator-docker-build experiment-tracking-docker-build workflow-controller-docker-build workflow-agent-docker-build ## Build docker image with the manager.
 
 .PHONY: docker-push
-docker-push: ## Push docker image with the manager.
-	docker push ${IMG}
+docker-push: operator-docker-push experiment-tracking-docker-push workflow-controller-docker-push workflow-agent-docker-push ## Push docker image with the manager.
 
 # PLATFORMS defines the target platforms for  the manager image be build to provide support to multiple
-# architectures. (i.e. make docker-buildx IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
+# architectures. (i.e. make docker-buildx OPERATOR_IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
 # - able to use docker buildx . More info: https://docs.docker.com/build/buildx/
 # - have enable BuildKit, More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 # - be able to push the image for your registry (i.e. if you do not inform a valid value via IMG=<myregistry/image:<tag>> than the export will fail)
@@ -139,7 +173,7 @@ docker-buildx: test ## Build and push docker image for the manager for cross-pla
 	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' Dockerfile > Dockerfile.cross
 	- docker buildx create --name project-v3-builder
 	docker buildx use project-v3-builder
-	- docker buildx build --push --platform=$(PLATFORMS) --tag ${IMG} -f Dockerfile.cross
+	- docker buildx build --push --platform=$(PLATFORMS) --tag ${OPERATOR_IMG} -f Dockerfile.cross
 	- docker buildx rm project-v3-builder
 	rm Dockerfile.cross
 
