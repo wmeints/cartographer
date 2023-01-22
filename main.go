@@ -96,10 +96,15 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Workspace")
 		os.Exit(1)
 	}
-	if err = (&mlopsv1alpha1.Workspace{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "Workspace")
-		os.Exit(1)
+
+	// Disable webhooks for make run target.
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		if err = (&mlopsv1alpha1.Workspace{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Workspace")
+			os.Exit(1)
+		}
 	}
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
