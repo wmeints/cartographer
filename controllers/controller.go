@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,6 +47,11 @@ func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	workspace.Default()
 
 	if err := r.Get(ctx, req.NamespacedName, workspace); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Info("Workspace not found. Skipping reconciliation.", "workspaceName", req.Name, "namespace", req.Namespace)
+			return ctrl.Result{}, nil
+		}
+
 		logger.Error(err, "Failed to get the workspace",
 			"workspaceName", workspace.GetName(),
 			"namespace", workspace.GetNamespace())
@@ -55,7 +61,7 @@ func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	if err := r.reconcileExperimentTracking(ctx, workspace); err != nil {
 		return ctrl.Result{}, err
-	} 
+	}
 
 	if err := r.reconcileWorkflowServer(ctx, workspace); err != nil {
 		return ctrl.Result{}, err
