@@ -127,10 +127,10 @@ The project has the following layout:
 │   ├── webhook                  # Mutation and validation hooks
 │   └── workspaces               # Sample workspaces
 ├── controllers                  # Implementation of the controllers
-├── docker                       # Customized docker images
-│   ├── experiment-tracking
-│   ├── workflow-agent
-│   └── workflow-controller
+└─── docker                       # Customized docker images
+    ├── experiment-tracking
+    ├── workflow-agent
+    └── workflow-controller
 ```
 
 
