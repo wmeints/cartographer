@@ -99,7 +99,7 @@ limitations under the License.
 
 ## Documentation
 
-### Project layout
+### Included components
 
 This project relies on a number of other projects to perform its task. 
 
@@ -108,4 +108,29 @@ For example, we currently ship these components as part of the operator:
 
 * MLFlow - We use this for experiment and model tracking
 * Prefect - We use this for building ML pipelines
+
+### Project layout
+
+The project has the following layout:
+
+```
+├── api                          # The API definitions for the operator
+├── config                       # The Kubernetes manifests to install the operator
+│   ├── certmanager              # The certificate issuer and certificate to secure the operator
+│   ├── crd                      # Custom resource definitions
+│   ├── default                  # Default installation configuration
+│   ├── manager                  # Manager deployment definitions
+│   ├── postgres                 # Included postgres operator install files
+│   ├── prometheus               # Metrics collection configuration
+│   ├── rbac                     # RBAC configuration
+│   ├── scorecard                # Validation tests
+│   ├── webhook                  # Mutation and validation hooks
+│   └── workspaces               # Sample workspaces
+├── controllers                  # Implementation of the controllers
+├── docker                       # Customized docker images
+│   ├── experiment-tracking
+│   ├── workflow-agent
+│   └── workflow-controller
+```
+
 
