@@ -59,7 +59,7 @@ kubectl apply --server-side -k ./config/postgres/operator/install/
 Next, you need to install the cartographer operator:
 
 ```
-kubectl apply --server-side -k ./config/cartographer/operator/install/
+kubectl apply -k ./config/default
 ```
 
 ### Deploying your first workspace
