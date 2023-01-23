@@ -15,11 +15,14 @@ func newTestWorkspace(workspaceName string) *mlopsv1alpha1.Workspace {
 			Namespace: "test-namespace",
 		},
 		Spec: mlopsv1alpha1.WorkspaceSpec{
+			Storage: mlopsv1alpha1.WorkspaceStorageSpec{
+				DatabaseStorage:       resource.MustParse("1Gi"),
+				DatabaseBackupStorage: resource.MustParse("1Gi"),
+			},
 			Workflows: mlopsv1alpha1.WorkflowComponentSpec{
 				Controller: mlopsv1alpha1.WorkflowControllerSpec{
-					DatabaseConnectionSecret: "test-secret",
-					Replicas:                 pointer.Int32(1),
-					Image:                    "prefecthq/prefect:2-latest",
+					Replicas: pointer.Int32(1),
+					Image:    "willemmeints/workflow-controller:latest",
 					Resources: corev1.ResourceRequirements{
 						Limits: corev1.ResourceList{
 							corev1.ResourceCPU:    resource.MustParse("1"),
@@ -34,13 +37,13 @@ func newTestWorkspace(workspaceName string) *mlopsv1alpha1.Workspace {
 				Agents: []mlopsv1alpha1.WorkflowAgentPoolSpec{
 					{
 						Name:     "test",
+						Image:    "willemmeints/workflow-agent:latest",
 						Replicas: pointer.Int32(1),
 					},
 				},
 			},
 			ExperimentTracking: mlopsv1alpha1.ExperimentTrackingComponentSpec{
-				Image:                    "willemmeints/mlflow:2.1.1",
-				DatabaseConnectionSecret: "test-secret",
+				Image: "willemmeints/experiment-tracking:latest",
 				Resources: corev1.ResourceRequirements{
 					Limits: corev1.ResourceList{
 						corev1.ResourceCPU:    resource.MustParse("1"),

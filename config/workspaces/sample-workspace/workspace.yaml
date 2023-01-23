@@ -20,7 +20,6 @@ spec:
         requests:
           cpu: 100m
           memory: 500Mi
-      databaseConnectionSecret: workspace-sample-pguser-prefect
     agentPools:
       - name: default
         replicas: 1
@@ -42,4 +41,3 @@ spec:
       requests:
         cpu: 100m
         memory: 500Mi
-    databaseConnectionSecret: workspace-sample-pguser-mlflow

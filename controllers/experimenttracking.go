@@ -38,7 +38,7 @@ func (r *WorkspaceReconciler) reconcileExperimentTrackingDeployment(ctx context.
 
 	if err := r.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: workspace.GetNamespace()}, deployment); err != nil {
 		if errors.IsNotFound(err) {
-			databaseSecretName := workspace.Spec.ExperimentTracking.DatabaseConnectionSecret
+			databaseSecretName := fmt.Sprintf("%s-pguser-mlflow", workspace.GetName())
 
 			container := newContainer(
 				"mlflow",

@@ -39,11 +39,6 @@ spec:
                 description: ExperimentTracking defines the configuration for the
                   MLFlow experiment tracking component
                 properties:
-                  databaseConnectionSecret:
-                    description: DatabaseConnectionSecret references a secret containing,
-                      host, port, username, password, dbname keys for connecting to
-                      the database used for the experiment tracking component.
-                    type: string
                   image:
                     description: Image defines the custom docker image to use for
                       deploying MLFlow
@@ -81,6 +76,27 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                     type: object
+                type: object
+              storage:
+                description: WorkspaceStorageSpec defines the storage configuration
+                  for the workspace
+                properties:
+                  database:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: DatabaseStorage defines the storage requirements
+                      for the database
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  databaseBackup:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: DatabaseBackupStorage defines the storage requirements
+                      for the database backup
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                 type: object
               workflows:
                 description: Workflows defines the configuration for the workflow
@@ -143,11 +159,6 @@ spec:
                     description: Controller defines the configuration for the workflow
                       server
                     properties:
-                      databaseConnectionSecret:
-                        description: DatabaseConnectionSecret references a secret
-                          containing, host, port, username, password, dbname keys
-                          for connecting to the database used for the workflow component.
-                        type: string
                       image:
                         description: Image defines the docker image to use for the
                           controller

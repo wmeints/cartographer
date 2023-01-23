@@ -211,9 +211,10 @@ func (r *WorkspaceReconciler) createWorkflowAgentPool(ctx context.Context, agent
 func newWorkflowServerDeployment(workspace *mlopsv1alpha1.Workspace) *appsv1.Deployment {
 	deploymentName := fmt.Sprintf("%s-orion-server", workspace.GetName())
 	deploymentLabels := newComponentLabels(workspace, "workflow-server")
-	container := newContainer("orion", workspace.Spec.Workflows.Controller.Image, workspace.Spec.Workflows.Controller.Resources)
+	databaseSecretName := fmt.Sprintf("%s-pguser-mlflow", workspace.GetName())
 
-	container.Env = newDatabaseSecretEnvVars(workspace.Spec.Workflows.Controller.DatabaseConnectionSecret)
+	container := newContainer("orion", workspace.Spec.Workflows.Controller.Image, workspace.Spec.Workflows.Controller.Resources)
+	container.Env = newDatabaseSecretEnvVars(databaseSecretName)
 
 	container.Ports = []corev1.ContainerPort{
 		{

@@ -49,6 +49,7 @@ func (r *Workspace) Default() {
 
 	defaultWorkflowsSpec(r)
 	defaultExperimentTrackingSpec(r)
+	defaultStorageSpec(r)
 }
 
 func defaultWorkflowsSpec(r *Workspace) {
@@ -129,15 +130,22 @@ func defaultExperimentTrackingSpec(r *Workspace) {
 	}
 }
 
+func defaultStorageSpec(r *Workspace) {
+	if r.Spec.Storage.DatabaseStorage.IsZero() {
+		r.Spec.Storage.DatabaseStorage = resource.MustParse("10Gi")
+	}
+
+	if r.Spec.Storage.DatabaseBackupStorage.IsZero() {
+		r.Spec.Storage.DatabaseBackupStorage = resource.MustParse("10Gi")
+	}
+}
+
 //+kubebuilder:webhook:path=/validate-mlops-aigency-com-v1alpha1-workspace,mutating=false,failurePolicy=fail,sideEffects=None,groups=mlops.aigency.com,resources=workspaces,verbs=create;update,versions=v1alpha1,name=mworkspace.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &Workspace{}
 
 func (r *Workspace) ValidateCreate() error {
 	validationErrors := field.ErrorList{}
-
-	validationErrors = append(validationErrors, validateExperimentTrackingSpec(r)...)
-	validationErrors = append(validationErrors, validateWorkflowControllerSpec(r)...)
 
 	if len(validationErrors) > 0 {
 		groupKind := schema.GroupKind{Group: "mlops.aigency.com", Kind: "Workspace"}
@@ -150,8 +158,6 @@ func (r *Workspace) ValidateCreate() error {
 func (r *Workspace) ValidateUpdate(old runtime.Object) error {
 	validationErrors := field.ErrorList{}
 
-	validationErrors = append(validationErrors, validateExperimentTrackingSpec(r)...)
-	validationErrors = append(validationErrors, validateWorkflowControllerSpec(r)...)
 	validationErrors = append(validationErrors, validateWorkflowAgentPoolNames(r)...)
 
 	if len(validationErrors) > 0 {
@@ -164,38 +170,6 @@ func (r *Workspace) ValidateUpdate(old runtime.Object) error {
 
 func (r *Workspace) ValidateDelete() error {
 	return nil
-}
-
-func validateWorkflowControllerSpec(r *Workspace) field.ErrorList {
-	validationErrors := field.ErrorList{}
-
-	if r.Spec.Workflows.Controller.DatabaseConnectionSecret == "" {
-		err := field.Invalid(
-			field.NewPath("spec").Child("workflows").Child("controller").Child("databaseConnectionSecret"),
-			r.Spec.Workflows.Controller.DatabaseConnectionSecret,
-			"must be set",
-		)
-
-		validationErrors = append(validationErrors, err)
-	}
-
-	return validationErrors
-}
-
-func validateExperimentTrackingSpec(r *Workspace) field.ErrorList {
-	validationErrors := field.ErrorList{}
-
-	if r.Spec.ExperimentTracking.DatabaseConnectionSecret == "" {
-		err := field.Invalid(
-			field.NewPath("spec").Child("experimentTracking").Child("databaseConnectionSecret"),
-			r.Spec.ExperimentTracking.DatabaseConnectionSecret,
-			"must be set",
-		)
-
-		validationErrors = append(validationErrors, err)
-	}
-
-	return validationErrors
 }
 
 func validateWorkflowAgentPoolNames(r *Workspace) field.ErrorList {

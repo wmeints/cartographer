@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,6 +29,8 @@ type WorkspaceSpec struct {
 
 	// ExperimentTracking defines the configuration for the MLFlow experiment tracking component
 	ExperimentTracking ExperimentTrackingComponentSpec `json:"experimentTracking,omitempty"`
+
+	Storage WorkspaceStorageSpec `json:"storage,omitempty"`
 }
 
 // WorkspaceStatus defines the observed state of Workspace
@@ -55,10 +58,6 @@ type WorkflowControllerSpec struct {
 
 	// Image defines the docker image to use for the controller
 	Image string `json:"image,omitempty"`
-
-	// DatabaseConnectionSecret references a secret containing, host, port, username, password, dbname keys for connecting
-	// to the database used for the workflow component.
-	DatabaseConnectionSecret string `json:"databaseConnectionSecret,omitempty"`
 }
 
 // WorkflowAgentPoolSpec defines the shape of an agent pool
@@ -87,12 +86,17 @@ type ExperimentTrackingComponentSpec struct {
 	// +kubebuilder:validation:Minimum=1
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	// DatabaseConnectionSecret references a secret containing, host, port, username, password, dbname keys for connecting
-	// to the database used for the experiment tracking component.
-	DatabaseConnectionSecret string `json:"databaseConnectionSecret,omitempty"`
-
 	// Resources define the resource requirements for the experiment tracking component
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+}
+
+// WorkspaceStorageSpec defines the storage configuration for the workspace
+type WorkspaceStorageSpec struct {
+	// DatabaseStorage defines the storage requirements for the database
+	DatabaseStorage resource.Quantity `json:"database,omitempty"`
+
+	// DatabaseBackupStorage defines the storage requirements for the database backup
+	DatabaseBackupStorage resource.Quantity `json:"databaseBackup,omitempty"`
 }
 
 //+kubebuilder:object:root=true

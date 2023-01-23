@@ -31,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	postgres "github.com/crunchydata/postgres-operator/pkg/apis/postgres-operator.crunchydata.com/v1beta1"
 	mlopsv1alpha1 "github.com/wmeints/cartographer/api/v1alpha1"
 	"github.com/wmeints/cartographer/controllers"
 	//+kubebuilder:scaffold:imports
@@ -43,8 +44,9 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
 	utilruntime.Must(mlopsv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(postgres.AddToScheme(scheme))
+
 	//+kubebuilder:scaffold:scheme
 }
 
