@@ -25,7 +25,7 @@ require (
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/crunchydata/postgres-operator v1.3.3-0.20230119211922-98d3c5ffc32f // indirect
+	github.com/crunchydata/postgres-operator v1.3.3-0.20230119211922-98d3c5ffc32f
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
