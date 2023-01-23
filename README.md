@@ -68,7 +68,7 @@ We've included a sample workspace in the repository. You can deploy it using
 the following command:
 
 ```
-kubectl apply -k ./config/cartographer/workspaces/
+kubectl apply -k ./config/workspaces/
 ```
 
 This command assumes that you're using the postgres operator we included in the
@@ -102,14 +102,10 @@ limitations under the License.
 ### Project layout
 
 This project relies on a number of other projects to perform its task. 
-There are only two components directly included in the project:
-
-* `operator` - This folder contains the cartographer operator managing the workspace.
-* `dashboard` - This folder contains the dashboard that you can use to monitor workspaces.
 
 In essence, the operator only manages components not provided elsewhere. 
 For example, we currently ship these components as part of the operator:
 
-* `experiment-tracking` - We deploy MLFlow into the cluster to track experiments.
-* `workflows` - We deploy Prefect and a set of Prefect agents to help build pipelines.
+* MLFlow - We use this for experiment and model tracking
+* Prefect - We use this for building ML pipelines
 

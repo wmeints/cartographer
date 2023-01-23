@@ -1,0 +1,45 @@
+apiVersion: mlops.aigency.com/v1alpha1
+kind: Workspace
+metadata:
+  labels:
+    app.kubernetes.io/name: workspace
+    app.kubernetes.io/instance: workspace-sample
+    app.kubernetes.io/part-of: cartographer
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: cartographer
+  name: workspace-sample
+spec:
+  workflows:
+    controller:
+      replicas: 1
+      image: willemmeints/workflow-controller:latest
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 500Mi
+      databaseConnectionSecret: workspace-sample-pguser-prefect
+    agentPools:
+      - name: default
+        replicas: 1
+        image: willemmeints/workflow-agent:latest
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 100m
+            memory: 500Mi
+  experimentTracking:
+    replicas: 1
+    image: willemmeints/experiment-tracking:latest
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 500Mi
+    databaseConnectionSecret: workspace-sample-pguser-mlflow
