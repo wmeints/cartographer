@@ -22,14 +22,15 @@ func (r *WorkspaceReconciler) reconcileRayCluster(ctx context.Context, workspace
 		"workspace", workspace.GetName(),
 		"namespace", workspace.GetNamespace())
 
+	clusterName := fmt.Sprintf("%s-ray", workspace.Name)
 	rayCluster := &ray.RayCluster{}
 
-	if err := r.Get(ctx, types.NamespacedName{Name: workspace.Name, Namespace: workspace.Namespace}, rayCluster); err != nil {
+	if err := r.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: workspace.Namespace}, rayCluster); err != nil {
 		if errors.IsNotFound(err) {
 			return r.createComputeCluster(ctx, workspace, logger)
 		}
 
-		logger.Error(err, "Failed to get ray cluster for workspace")
+		logger.Error(err, "Failed to get the compute cluster for the workspace")
 		return err
 	}
 
@@ -65,12 +66,13 @@ func (r *WorkspaceReconciler) updateComputeCluster(ctx context.Context, workspac
 func (r *WorkspaceReconciler) createComputeCluster(ctx context.Context, workspace *mlopsv1alpha1.Workspace, logger logr.Logger) error {
 	logger.Info("Compute cluster not found. Creating new ray cluster for workspace")
 
+	clusterName := fmt.Sprintf("%s-ray", workspace.Name)
 	controllerSpec := newRayClusterController(workspace)
 	workerGroups := newWorkerGroups(workspace)
 
 	rayCluster := &ray.RayCluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      workspace.Name,
+			Name:      clusterName,
 			Namespace: workspace.Namespace,
 		},
 		Spec: ray.RayClusterSpec{

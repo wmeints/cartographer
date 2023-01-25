@@ -68,3 +68,15 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch

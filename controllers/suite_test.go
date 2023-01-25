@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	postgres "github.com/crunchydata/postgres-operator/pkg/apis/postgres-operator.crunchydata.com/v1beta1"
+	ray "github.com/ray-project/kuberay/ray-operator/apis/ray/v1alpha1"
 	mlopsv1alpha1 "github.com/wmeints/cartographer/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -64,6 +65,7 @@ var _ = BeforeSuite(func() {
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "config", "crd", "bases"),
 			filepath.Join("..", "config", "postgres", "operator", "crd", "bases"),
+			filepath.Join("..", "config", "ray", "operator", "crd", "bases"),
 		},
 		ErrorIfCRDPathMissing: true,
 	}
@@ -78,6 +80,9 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	err = postgres.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = ray.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme
