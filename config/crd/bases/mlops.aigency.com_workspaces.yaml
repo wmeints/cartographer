@@ -35,6 +35,112 @@ spec:
           spec:
             description: WorkspaceSpec defines the desired state of Workspace
             properties:
+              compute:
+                description: ComputeSpec defines the configuration for the compute
+                  cluster
+                properties:
+                  controller:
+                    description: Controller defines the configuration for the compute
+                      cluster controller
+                    properties:
+                      image:
+                        description: Image defines the docker image to use for the
+                          compute cluster controller
+                        type: string
+                      replicas:
+                        description: Replicas controls how many controllers to deploy
+                          for the compute cluster controller
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      resources:
+                        description: Resources defines the compute resources to allocate
+                          for the compute cluster controller
+                        properties:
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                        type: object
+                    type: object
+                  rayVersion:
+                    description: RayVersion defines the version of Ray in use in the
+                      compute cluster
+                    type: string
+                  workers:
+                    description: WorkerPools defines the worker pools to deploy
+                    items:
+                      properties:
+                        image:
+                          description: Image defines the docker image to use for the
+                            compute cluster controller
+                          type: string
+                        maxReplicas:
+                          description: MaxReplicas defines the maximum number of replicas
+                            to deploy for the worker pool
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        minReplicas:
+                          description: MinReplicas defines the minimum number of replicas
+                            to deploy for the worker pool
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        name:
+                          description: Name defines the name of the worker pool
+                          type: string
+                        resources:
+                          description: Resources defines the compute resources to
+                            allocate for each worker in the pool
+                          properties:
+                            limits:
+                              additionalProperties:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                x-kubernetes-int-or-string: true
+                              description: 'Limits describes the maximum amount of
+                                compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                              type: object
+                            requests:
+                              additionalProperties:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                x-kubernetes-int-or-string: true
+                              description: 'Requests describes the minimum amount
+                                of compute resources required. If Requests is omitted
+                                for a container, it defaults to Limits if that is
+                                explicitly specified, otherwise to an implementation-defined
+                                value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                              type: object
+                          type: object
+                      type: object
+                    minItems: 1
+                    type: array
+                type: object
               experimentTracking:
                 description: ExperimentTracking defines the configuration for the
                   MLFlow experiment tracking component
