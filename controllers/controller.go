@@ -40,10 +40,12 @@ type WorkspaceReconciler struct {
 //+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps,resources=deployments;statefulsets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=postgres-operator.crunchydata.com,resources=postgresclusters,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=ray.io,resources=rayclusters,verbs=get;list;create;watch;update;patch;delete
 
 // Reconcile matches the expected state of the workspace against the cluster state.
 // It automatically updates the cluster state if there's a mismatch.
-func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.
+	Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	workspace := &mlopsv1alpha1.Workspace{}
@@ -71,6 +73,10 @@ func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	if err := r.reconcileWorkflowServer(ctx, workspace); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err := r.reconcileRayCluster(ctx, workspace); err != nil {
 		return ctrl.Result{}, err
 	}
 

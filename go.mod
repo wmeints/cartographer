@@ -3,6 +3,7 @@ module github.com/wmeints/cartographer
 go 1.19
 
 require (
+	github.com/crunchydata/postgres-operator v1.3.3-0.20230119211922-98d3c5ffc32f
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo/v2 v2.7.0
 	github.com/onsi/gomega v1.24.2
@@ -11,7 +12,6 @@ require (
 	k8s.io/client-go v0.25.0
 	k8s.io/utils v0.0.0-20221107191617-1a15be271d1d
 	sigs.k8s.io/controller-runtime v0.13.0
-	github.com/crunchydata/postgres-operator v1.3.3-0.20230119211922-98d3c5ffc32f
 )
 
 require (
@@ -55,6 +55,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/ray-project/kuberay/ray-operator v0.0.0-20230124160631-cbe1865a40ce
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect

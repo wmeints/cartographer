@@ -31,6 +31,8 @@ type WorkspaceSpec struct {
 	ExperimentTracking ExperimentTrackingComponentSpec `json:"experimentTracking,omitempty"`
 
 	Storage WorkspaceStorageSpec `json:"storage,omitempty"`
+
+	Compute ComputeSpec `json:"compute,omitempty"`
 }
 
 // WorkspaceStatus defines the observed state of Workspace
@@ -97,6 +99,23 @@ type WorkspaceStorageSpec struct {
 
 	// DatabaseBackupStorage defines the storage requirements for the database backup
 	DatabaseBackupStorage resource.Quantity `json:"databaseBackup,omitempty"`
+}
+
+// ComputeSpec defines the configuration for the compute cluster
+type ComputeSpec struct {
+	Controller ComputeControllerSpec `json:"controller,omitempty"`
+	Workers    ComputeWorkerSpec     `json:"workers,omitempty"`
+	RayVersion string                `json:"rayVersion,omitempty"`
+}
+
+// ComputeControllerSpec defines the configuration for the compute cluster controller
+type ComputeControllerSpec struct {
+	// Replicas controls how many controllers to deploy for the compute cluster controller
+	Replicas  *int32 `json:"replicas,omitempty"`
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+}
+
+type ComputeWorkerSpec struct {
 }
 
 //+kubebuilder:object:root=true
