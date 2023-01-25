@@ -17,13 +17,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/utils/pointer"
 	"k8s.io/utils/strings/slices"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -45,99 +42,12 @@ var _ webhook.Defaulter = &Workspace{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *Workspace) Default() {
-	workspacelog.Info("default", "name", r.Name)
+	workspacelog.Info("Providing defaults for workspace", "workspaceName", r.Name)
 
 	defaultWorkflowsSpec(r)
 	defaultExperimentTrackingSpec(r)
 	defaultStorageSpec(r)
-}
-
-func defaultWorkflowsSpec(r *Workspace) {
-	if r.Spec.Workflows.Controller.Image == "" {
-		r.Spec.Workflows.Controller.Image = "willemmeints/workflow-controller:latest"
-	}
-
-	if len(r.Spec.Workflows.Controller.Resources.Limits) == 0 {
-		r.Spec.Workflows.Controller.Resources.Limits = corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("1"),
-			corev1.ResourceMemory: resource.MustParse("1Gi"),
-		}
-	}
-
-	if len(r.Spec.Workflows.Controller.Resources.Requests) == 0 {
-		r.Spec.Workflows.Controller.Resources.Requests = corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("100m"),
-			corev1.ResourceMemory: resource.MustParse("200Mi"),
-		}
-	}
-
-	if r.Spec.Workflows.Controller.Replicas == nil {
-		r.Spec.Workflows.Controller.Replicas = pointer.Int32(1)
-	}
-
-	agents := []WorkflowAgentPoolSpec{}
-
-	for _, agentPoolSpec := range r.Spec.Workflows.Agents {
-		if agentPoolSpec.Image == "" {
-			agentPoolSpec.Image = "willemmeints/workflow-agent:latest"
-		}
-
-		if len(agentPoolSpec.Resources.Limits) == 0 {
-			agentPoolSpec.Resources.Limits = corev1.ResourceList{
-				corev1.ResourceCPU:    resource.MustParse("2"),
-				corev1.ResourceMemory: resource.MustParse("16Gi"),
-			}
-		}
-
-		if len(agentPoolSpec.Resources.Requests) == 0 {
-			agentPoolSpec.Resources.Requests = corev1.ResourceList{
-				corev1.ResourceCPU:    resource.MustParse("500m"),
-				corev1.ResourceMemory: resource.MustParse("2Gi"),
-			}
-		}
-
-		if agentPoolSpec.Replicas == nil {
-			agentPoolSpec.Replicas = pointer.Int32(1)
-		}
-
-		agents = append(agents, agentPoolSpec)
-	}
-
-	r.Spec.Workflows.Agents = agents
-}
-
-func defaultExperimentTrackingSpec(r *Workspace) {
-	if r.Spec.ExperimentTracking.Image == "" {
-		r.Spec.ExperimentTracking.Image = "willemmeints/experiment-tracking:latest"
-	}
-
-	if r.Spec.ExperimentTracking.Replicas == nil {
-		r.Spec.ExperimentTracking.Replicas = pointer.Int32(1)
-	}
-
-	if len(r.Spec.ExperimentTracking.Resources.Limits) == 0 {
-		r.Spec.ExperimentTracking.Resources.Limits = corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("1"),
-			corev1.ResourceMemory: resource.MustParse("1Gi"),
-		}
-	}
-
-	if len(r.Spec.ExperimentTracking.Resources.Requests) == 0 {
-		r.Spec.ExperimentTracking.Resources.Requests = corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("500m"),
-			corev1.ResourceMemory: resource.MustParse("512Mi"),
-		}
-	}
-}
-
-func defaultStorageSpec(r *Workspace) {
-	if r.Spec.Storage.DatabaseStorage.IsZero() {
-		r.Spec.Storage.DatabaseStorage = resource.MustParse("10Gi")
-	}
-
-	if r.Spec.Storage.DatabaseBackupStorage.IsZero() {
-		r.Spec.Storage.DatabaseBackupStorage = resource.MustParse("10Gi")
-	}
+	defaultComputeClusterSpec(r)
 }
 
 //+kubebuilder:webhook:path=/validate-mlops-aigency-com-v1alpha1-workspace,mutating=false,failurePolicy=fail,sideEffects=None,groups=mlops.aigency.com,resources=workspaces,verbs=create;update,versions=v1alpha1,name=mworkspace.kb.io,admissionReviewVersions=v1

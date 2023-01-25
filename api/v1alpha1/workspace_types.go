@@ -66,15 +66,12 @@ type WorkflowControllerSpec struct {
 type WorkflowAgentPoolSpec struct {
 	// Name specifies the name of the agent pool and the associated queue
 	Name string `json:"name,omitempty"`
-
 	// Image specifies a custom prefect image to use for the agent pool
 	// +optional
 	Image string `json:"image,omitempty"`
-
 	// Replicas controls how many agents are deployed in the pool
 	// +kubebuilder:validation:Minimum=1
 	Replicas *int32 `json:"replicas"`
-
 	// Resources define the resource requirements for each agent in the pool
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 }
@@ -103,19 +100,40 @@ type WorkspaceStorageSpec struct {
 
 // ComputeSpec defines the configuration for the compute cluster
 type ComputeSpec struct {
+	// Controller defines the configuration for the compute cluster controller
 	Controller ComputeControllerSpec `json:"controller,omitempty"`
-	Workers    ComputeWorkerSpec     `json:"workers,omitempty"`
-	RayVersion string                `json:"rayVersion,omitempty"`
+	// WorkerPools defines the worker pools to deploy
+	// +kubebuilder:validation:MinItems=1
+	WorkerPools []ComputeWorkerPoolSpec `json:"workers,omitempty"`
+	// RayVersion defines the version of Ray in use in the compute cluster
+	// +optional
+	RayVersion string `json:"rayVersion,omitempty"`
 }
 
 // ComputeControllerSpec defines the configuration for the compute cluster controller
 type ComputeControllerSpec struct {
 	// Replicas controls how many controllers to deploy for the compute cluster controller
-	Replicas  *int32 `json:"replicas,omitempty"`
+	// +kubebuilder:validation:Minimum=1
+	Replicas *int32 `json:"replicas,omitempty"`
+	// Resources defines the compute resources to allocate for the compute cluster controller
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	// Image defines the docker image to use for the compute cluster controller
+	Image string `json:"image,omitempty"`
 }
 
-type ComputeWorkerSpec struct {
+type ComputeWorkerPoolSpec struct {
+	// Name defines the name of the worker pool
+	Name string `json:"name,omitempty"`
+	// MinReplicas defines the minimum number of replicas to deploy for the worker pool
+	// +kubebuilder:validation:Minimum=1
+	MinReplicas *int32 `json:"minReplicas,omitempty"`
+	// MaxReplicas defines the maximum number of replicas to deploy for the worker pool
+	// +kubebuilder:validation:Minimum=1
+	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
+	// Resources defines the compute resources to allocate for each worker in the pool
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	// Image defines the docker image to use for the compute cluster controller
+	Image string `json:"image,omitempty"`
 }
 
 //+kubebuilder:object:root=true
