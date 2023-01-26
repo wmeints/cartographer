@@ -15,6 +15,10 @@ func defaultComputeClusterSpec(r *Workspace) {
 }
 
 func defaultComputerClusterControllerSpec(r *Workspace) {
+	if r.Spec.Compute.RayVersion == "" {
+		r.Spec.Compute.RayVersion = "2.2.0"
+	}
+
 	if r.Spec.Compute.Controller.Image == "" {
 		r.Spec.Compute.Controller.Image = fmt.Sprintf("rayproject/ray:%s", r.Spec.Compute.RayVersion)
 	}
