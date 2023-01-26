@@ -108,6 +108,7 @@ func newRayClusterController(workspace *mlopsv1alpha1.Workspace) ray.HeadGroupSp
 			"dashboard-host": "0.0.0.0",
 			"block":          "true",
 		},
+		ServiceType: corev1.ServiceTypeClusterIP,
 		Template: corev1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
 				Labels: rayClusterLabels,

@@ -56,7 +56,16 @@ the postgres operator, run the following command:
 kubectl apply --server-side -k ./config/postgres/operator/install/
 ```
 
-Next, you need to install the cartographer operator:
+Next to installing the postgres, you'll also need to install the Ray operator.
+We use the Ray operator to enable distributed model training and data processing.
+
+Use this command to install Ray:
+
+```
+kubectl apply --server-side -k ./config/ray/operator/install/
+```
+
+After this, you can to install the cartographer operator:
 
 ```
 kubectl apply -k ./config/default
