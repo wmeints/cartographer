@@ -197,7 +197,7 @@ func newWorkerGroups(workspace *mlopsv1alpha1.Workspace) []ray.WorkerGroupSpec {
 					InitContainers: []corev1.Container{
 						{
 							Name:    "ray-worker-init",
-							Image:   "busbox:1.28",
+							Image:   "busybox:1.35",
 							Command: []string{"sh", "-c", "until nslookup $RAY_IP.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for K8s Service $RAY_IP; sleep 2; done"},
 						},
 					},
