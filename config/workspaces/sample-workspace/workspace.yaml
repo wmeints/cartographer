@@ -41,3 +41,15 @@ spec:
       requests:
         cpu: 100m
         memory: 500Mi
+  compute:
+    workers:
+      - name: default
+        maxReplicas: 4
+        minReplicas: 2
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 500m
+            memory: 1Gi
