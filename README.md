@@ -136,10 +136,8 @@ The project has the following layout:
 │   ├── webhook                  # Mutation and validation hooks
 │   └── workspaces               # Sample workspaces
 ├── controllers                  # Implementation of the controllers
-└─── docker                       # Customized docker images
-    ├── experiment-tracking
-    ├── workflow-agent
-    └── workflow-controller
+└─── docker                      
+    ├── experiment-tracking      # MLFlow docker image
+    ├── workflow-agent           # Prefect agent image
+    └── workflow-controller      # Prefect server image
 ```
-
-
