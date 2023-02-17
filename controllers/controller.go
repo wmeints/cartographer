@@ -46,7 +46,7 @@ type WorkspaceReconciler struct {
 // It automatically updates the cluster state if there's a mismatch.
 func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.
 	Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
+	logger := log.FromContext(ctx).WithValues("workspace", req.NamespacedName, "namespace", req.Namespace)
 
 	workspace := &mlopsv1alpha1.Workspace{}
 	workspace.Default()
@@ -57,10 +57,7 @@ func (r *WorkspaceReconciler) Reconcile(ctx context.Context, req ctrl.
 			return ctrl.Result{}, nil
 		}
 
-		logger.Error(err, "Failed to get the workspace",
-			"workspaceName", workspace.GetName(),
-			"namespace", workspace.GetNamespace())
-
+		logger.Error(err, "Failed to get the workspace")
 		return ctrl.Result{}, err
 	}
 
