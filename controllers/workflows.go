@@ -185,7 +185,7 @@ func (r *WorkspaceReconciler) createWorkflowAgentPool(ctx context.Context, agent
 		},
 		{
 			Name:  "MLFLOW_TRACKING_URI",
-			Value: fmt.Sprintf("http://%s-orion-server:4200/api", workspace.GetName()),
+			Value: fmt.Sprintf("http://%s-mlflow-server:5000", workspace.GetName()),
 		},
 		{
 			Name:  "QUEUE_NAME",
