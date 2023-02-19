@@ -129,6 +129,7 @@ For example, we currently ship these components as part of the operator:
 
 * MLFlow - We use this for experiment and model tracking
 * Prefect - We use this for building ML pipelines
+* Ray - We use this to scale out training of deep learning models
 * Postgres - We use the crunchy data postgresql operator to manage the databases
 
 We've not included data storage in this operator as we expect people to have
