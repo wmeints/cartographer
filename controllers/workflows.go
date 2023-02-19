@@ -53,12 +53,28 @@ func (r *WorkspaceReconciler) reconcileWorkflowServerDeployment(ctx context.Cont
 }
 
 func (r *WorkspaceReconciler) updateWorkflowServerDeployment(ctx context.Context, deployment *appsv1.Deployment, workspace *mlopsv1alpha1.Workspace, logger logr.Logger) error {
-	deployment.Spec.Replicas = workspace.Spec.Workflows.Controller.Replicas
-	deployment.Spec.Template.Spec.Containers[0].Image = workspace.Spec.Workflows.Controller.Image
+	deploymentChanged := false
 
-	if err := r.Update(ctx, deployment); err != nil {
-		logger.Error(err, "Failed to scale deployment for workflow server")
-		return err
+	if deployment.Spec.Replicas != workspace.Spec.Workflows.Controller.Replicas {
+		deployment.Spec.Replicas = workspace.Spec.Workflows.Controller.Replicas
+		deploymentChanged = true
+	}
+
+	if deployment.Spec.Template.Spec.Containers[0].Image != workspace.Spec.Workflows.Controller.Image {
+		deployment.Spec.Template.Spec.Containers[0].Image = workspace.Spec.Workflows.Controller.Image
+		deploymentChanged = true
+	}
+
+	if !reflect.DeepEqual(deployment.Spec.Template.Spec.Containers[0].Resources, workspace.Spec.Workflows.Controller.Resources) {
+		deployment.Spec.Template.Spec.Containers[0].Resources = workspace.Spec.Workflows.Controller.Resources
+		deploymentChanged = true
+	}
+
+	if deploymentChanged {
+		if err := r.Update(ctx, deployment); err != nil {
+			logger.Error(err, "Failed to update workflow controller deployment")
+			return err
+		}
 	}
 
 	return nil

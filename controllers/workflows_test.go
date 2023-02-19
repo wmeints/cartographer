@@ -108,7 +108,7 @@ var _ = Describe("reconcileWorkflowServer", Ordered, func() {
 			}
 
 			return nil
-		})
+		}, time.Minute, time.Second).Should(Succeed())
 	})
 
 	It("Should update the image of the workflow agents", func() {
@@ -133,12 +133,11 @@ var _ = Describe("reconcileWorkflowServer", Ordered, func() {
 			}
 
 			return nil
-		})
+		}, time.Minute, time.Second).Should(Succeed())
 	})
 
 	It("Should vertically scale workflow agents", func() {
 		ctx := context.Background()
-
 		workspace := createWorkspaceAndWaitForAgentPoolDeployment(ctx, "test-workflow-agents-vertical-scaling")
 
 		workspace.Spec.Workflows.Agents[0].Resources = corev1.ResourceRequirements{
@@ -179,7 +178,118 @@ var _ = Describe("reconcileWorkflowServer", Ordered, func() {
 			}
 
 			return nil
-		})
+		}, time.Minute, time.Second).Should(Succeed())
+	})
+
+	It("Should horizontally scale workflow controllers", func() {
+		ctx := context.Background()
+		workspace := createWorkspaceAndWaitForAgentPoolDeployment(ctx, "test-workflow-controller-replicas")
+
+		workspace.Spec.Workflows.Controller.Replicas = pointer.Int32(2)
+
+		err := k8sClient.Update(ctx, workspace)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(func() error {
+			typedDeploymentName := types.NamespacedName{
+				Name:      fmt.Sprintf("%s-orion-server", workspace.GetName()),
+				Namespace: "test-namespace",
+			}
+
+			deployment := appsv1.Deployment{}
+			err := k8sClient.Get(ctx, typedDeploymentName, &deployment)
+
+			if err != nil {
+				return err
+			}
+
+			if *deployment.Spec.Replicas != 2 {
+				return fmt.Errorf("expected 2 replicas, got %d", *deployment.Spec.Replicas)
+			}
+
+			return nil
+		}, time.Minute, time.Second).Should(Succeed())
+	})
+
+	It("Should update the image of the workflow controller", func() {
+		ctx := context.Background()
+		workspace := createWorkspaceAndWaitForAgentPoolDeployment(ctx, "test-workflow-controller-image")
+
+		workspace.Spec.Workflows.Controller.Image = "willemmeints/workflow-controller:unknown"
+
+		err := k8sClient.Update(ctx, workspace)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(func() error {
+			typedDeploymentName := types.NamespacedName{
+				Name:      fmt.Sprintf("%s-orion-server", workspace.GetName()),
+				Namespace: "test-namespace",
+			}
+
+			deployment := appsv1.Deployment{}
+			err := k8sClient.Get(ctx, typedDeploymentName, &deployment)
+
+			if err != nil {
+				return err
+			}
+
+			if deployment.Spec.Template.Spec.Containers[0].Image != "willemmeints/workflow-controller:unknown" {
+				return fmt.Errorf("expected image to be 'willemmeints/workflow-controller:unknown', got %s", deployment.Spec.Template.Spec.Containers[0].Image)
+			}
+
+			return nil
+		}, time.Minute, time.Second).Should(Succeed())
+	})
+
+	It("Should vertically scale workflow controllers", func() {
+		ctx := context.Background()
+		workspace := createWorkspaceAndWaitForAgentPoolDeployment(ctx, "test-workflow-controller-resources")
+
+		workspace.Spec.Workflows.Controller.Resources = corev1.ResourceRequirements{
+			Limits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("2Gi"),
+			},
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("1Gi"),
+			},
+		}
+
+		err := k8sClient.Update(ctx, workspace)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(func() error {
+			typedDeploymentName := types.NamespacedName{
+				Name:      fmt.Sprintf("%s-orion-server", workspace.GetName()),
+				Namespace: "test-namespace",
+			}
+
+			deployment := appsv1.Deployment{}
+			err := k8sClient.Get(ctx, typedDeploymentName, &deployment)
+
+			if err != nil {
+				return err
+			}
+
+			if deployment.Spec.Template.Spec.Containers[0].Resources.Limits.Cpu().String() != "2" {
+				return fmt.Errorf("expected cpu limit to be '2', got %s", deployment.Spec.Template.Spec.Containers[0].Resources.Limits.Cpu().String())
+			}
+
+			if deployment.Spec.Template.Spec.Containers[0].Resources.Limits.Memory().String() != "2Gi" {
+				return fmt.Errorf("expected memory limit to be '2Gi', got %s", deployment.Spec.Template.Spec.Containers[0].Resources.Limits.Memory().String())
+			}
+
+			if deployment.Spec.Template.Spec.Containers[0].Resources.Requests.Cpu().String() != "1" {
+				return fmt.Errorf("expected cpu request to be '1', got %s", deployment.Spec.Template.Spec.Containers[0].Resources.Requests.Cpu().String())
+			}
+
+			if deployment.Spec.Template.Spec.Containers[0].Resources.Requests.Memory().String() != "1Gi" {
+				return fmt.Errorf("expected memory request to be '1Gi', got %s", deployment.Spec.Template.Spec.Containers[0].Resources.Requests.Memory().String())
+			}
+
+			return nil
+		}, time.Minute, time.Second).Should(Succeed())
 	})
 })
 
