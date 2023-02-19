@@ -56,6 +56,40 @@ func newTestWorkspace(workspaceName string) *mlopsv1alpha1.Workspace {
 					},
 				},
 			},
+			Compute: mlopsv1alpha1.ComputeSpec{
+				Controller: mlopsv1alpha1.ComputeControllerSpec{
+					Replicas: pointer.Int32(1),
+					Image:    "rayproject/ray:2.2.0",
+					Resources: corev1.ResourceRequirements{
+						Limits: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("1"),
+							corev1.ResourceMemory: resource.MustParse("1Gi"),
+						},
+						Requests: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("100m"),
+							corev1.ResourceMemory: resource.MustParse("200Mi"),
+						},
+					},
+				},
+				WorkerPools: []mlopsv1alpha1.ComputeWorkerPoolSpec{
+					{
+						Name:        "test",
+						Image:       "rayproject/ray:2.2.0",
+						MinReplicas: pointer.Int32(1),
+						MaxReplicas: pointer.Int32(1),
+						Resources: corev1.ResourceRequirements{
+							Limits: corev1.ResourceList{
+								corev1.ResourceCPU:    resource.MustParse("1"),
+								corev1.ResourceMemory: resource.MustParse("1Gi"),
+							},
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    resource.MustParse("100m"),
+								corev1.ResourceMemory: resource.MustParse("200Mi"),
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
