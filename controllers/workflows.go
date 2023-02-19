@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/go-logr/logr"
 	mlopsv1alpha1 "github.com/wmeints/cartographer/api/v1alpha1"
@@ -150,6 +151,11 @@ func (r *WorkspaceReconciler) updateWorkflowAgentPool(ctx context.Context, state
 
 	if statefulSet.Spec.Template.Spec.Containers[0].Image != agentPoolSpec.Image {
 		statefulSet.Spec.Template.Spec.Containers[0].Image = agentPoolSpec.Image
+		statefulSetChanged = true
+	}
+
+	if !reflect.DeepEqual(statefulSet.Spec.Template.Spec.Containers[0].Resources, agentPoolSpec.Resources) {
+		statefulSet.Spec.Template.Spec.Containers[0].Resources = agentPoolSpec.Resources
 		statefulSetChanged = true
 	}
 
