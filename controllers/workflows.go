@@ -55,7 +55,7 @@ func (r *WorkspaceReconciler) reconcileWorkflowServerDeployment(ctx context.Cont
 func (r *WorkspaceReconciler) updateWorkflowServerDeployment(ctx context.Context, deployment *appsv1.Deployment, workspace *mlopsv1alpha1.Workspace, logger logr.Logger) error {
 	deploymentChanged := false
 
-	if deployment.Spec.Replicas != workspace.Spec.Workflows.Controller.Replicas {
+	if *deployment.Spec.Replicas != *workspace.Spec.Workflows.Controller.Replicas {
 		deployment.Spec.Replicas = workspace.Spec.Workflows.Controller.Replicas
 		deploymentChanged = true
 	}
