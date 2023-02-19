@@ -43,7 +43,8 @@ func newTestWorkspace(workspaceName string) *mlopsv1alpha1.Workspace {
 				},
 			},
 			ExperimentTracking: mlopsv1alpha1.ExperimentTrackingComponentSpec{
-				Image: "willemmeints/experiment-tracking:latest",
+				Image:    "willemmeints/experiment-tracking:latest",
+				Replicas: pointer.Int32(1),
 				Resources: corev1.ResourceRequirements{
 					Limits: corev1.ResourceList{
 						corev1.ResourceCPU:    resource.MustParse("1"),
