@@ -11,6 +11,8 @@ Please note that this is very much a work in progress! Not everything that we're
 planning to include is currently in the operator code. Also, we haven't tested
 this solution fully. **Use at your own risk.**
 
+:warning: Looking for the .NET version? Check [this branch](https://github.com/wmeints/cartographer/tree/dotnet-version)
+
 --------------------------------------------------------------------------------
 
 ## Description
