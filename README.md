@@ -3,6 +3,16 @@
 Use cartographer to build your own custom MLOps environment on top of Kubernetes
 with tools like MLFlow, Ray, and Prefect. 
 
+--------------------------------------------------------------------------------
+
+## Project status
+
+Please note that this is very much a work in progress! Not everything that we're
+planning to include is currently in the operator code. Also, we haven't tested
+this solution fully. **Use at your own risk.**
+
+--------------------------------------------------------------------------------
+
 ## Description
 
 We made this project to help us manage our own machine learning infrastructure.
@@ -22,7 +32,7 @@ a single machine and scale that to multiple agents across a cluster.
 
 We need reproducable projects for our clients. To support this idea, we use 
 MLFlow to track experiments, models, and associated data. You can use MLFlow
-on your own workstation too. 
+on your own workstation too.
 
 ## Getting Started
 
@@ -117,6 +127,11 @@ For example, we currently ship these components as part of the operator:
 
 * MLFlow - We use this for experiment and model tracking
 * Prefect - We use this for building ML pipelines
+* Postgres - We use the crunchy data postgresql operator to manage the databases
+
+We've not included data storage in this operator as we expect people to have
+some sort of data lake or data warehouse where the data for the machine-learning
+projects is stored.
 
 ### Project layout
 
@@ -141,3 +156,11 @@ The project has the following layout:
     ├── workflow-agent           # Prefect agent image
     └── workflow-controller      # Prefect server image
 ```
+
+### Roadmap
+
+We plan to include a number of other components:
+
+* NannyML for monitoring models in production
+* Ray serve/KServe for deploying models on the cluster (we haven't fully decided yet)
+
